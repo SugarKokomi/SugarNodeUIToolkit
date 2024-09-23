@@ -1,0 +1,18 @@
+{
+    "name": "SugarNode.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:fd95077b807fee34c964c608f8b3a8de"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
