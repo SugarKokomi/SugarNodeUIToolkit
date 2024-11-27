@@ -31,6 +31,13 @@ public class NodeEditor : EditorWindow
         // 将节属性面板视图添加到节点编辑器中
         inspectorViewer = root.Q<InspectorViewer>();
     }
+    void OnEnable()
+    {
+        Selection.selectionChanged += OnSelectionChange;
+    }
+    private void OnDisable() {
+        Selection.selectionChanged -= OnSelectionChange;
+    }
     private void OnSelectionChange()
     {
         // 检测该选中对象中是否存在节点树

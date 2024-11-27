@@ -30,12 +30,11 @@ public class NodeTreeViewer : GraphView
     public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
     {
         // 添加Node抽象类下的所有子类到右键创建栏中
+
+        var types = TypeCache.GetTypesDerivedFrom<Node>();
+        foreach (var type in types)
         {
-            var types = TypeCache.GetTypesDerivedFrom<Node>();
-            foreach (var type in types)
-            {
-                evt.menu.AppendAction($"{type.Name}", (a) => CreateNode(type));
-            }
+            evt.menu.AppendAction($"{type.Name}", (a) => CreateNode(type));
         }
     }
 

@@ -6,8 +6,16 @@ namespace SugarNode
 {
     public abstract class Node : ScriptableObject
     {
-        protected internal abstract HashSet<NodePort> InitInputPort();
-        protected internal abstract HashSet<NodePort> InitOutputPort();
+        internal Graph m_graph;
+        public Graph graph => m_graph;
+        [HideInInspector]
+        public string guid;
+        // protected internal abstract HashSet<NodePort> InitInputPort();
+        // protected internal abstract HashSet<NodePort> InitOutputPort();
+#if UNITY_EDITOR
+        [HideInInspector]
+        public Vector2 gridPos = Vector2.zero;
+#endif
     }
     public sealed class Empty { }
     public sealed class NodePort : NodePort<Empty> { }

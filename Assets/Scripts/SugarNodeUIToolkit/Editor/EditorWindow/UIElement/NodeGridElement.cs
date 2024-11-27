@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEngine;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
@@ -16,60 +17,68 @@ namespace SugarNode.Editor
             this.AddManipulator(new ContentDragger());// 添加视图拖拽
             this.AddManipulator(new SelectionDragger());// 添加选中对象拖拽
             this.AddManipulator(new RectangleSelector());// 添加框选
-            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(NodeEditorSetting.UIElementFolderPath + "NodeGridElement.uss");
+            var styleSheet = Resources.Load<StyleSheet>("NodeEditorWindow_StyleSheet");
             styleSheets.Add(styleSheet);
+            NodeEditorWindow.Window.nodeGridElement = this;
         }
-
-        // 右键节点创建栏
+        // 右键创建节点
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
-            // 添加Node抽象类下的所有子类到右键创建栏中
+            if (NodeEditorWindow.activeGraph)
             {
                 var types = TypeCache.GetTypesDerivedFrom<Node>();
+                Vector2 mousePositionInGridSpace = this.contentViewContainer.WorldToLocal(evt.mousePosition);
                 foreach (var type in types)
                 {
-                    evt.menu.AppendAction($"{type.Name}", (a) => CreateNode(type));
+                    if (type.IsAbstract) continue;//无法new出来抽象类、静态类
+                    evt.menu.AppendAction($"{type.Name}", (a) => CreateNode(type, mousePositionInGridSpace));
+                }
+            }
+            else Debug.Log("请先选择激活一个Graph对象");
+        }
+        //Delect键删除节点
+        public override EventPropagation DeleteSelection()
+        {
+            foreach (GraphElement element in selection.Cast<GraphElement>())
+            {
+                if (element is NodeElement nodeUI)
+                    DeleteNode(nodeUI.node);
+            }
+            return base.DeleteSelection();
+        }
+        void CreateNode(System.Type type, Vector2 mousePositionInGridSpace)
+        {
+            if (NodeEditorWindow.activeGraph)
+            {
+                Node node = ScriptableObject.CreateInstance(type) as Node;
+                node.name = type.Name;
+                node.gridPos = mousePositionInGridSpace;
+                node.guid = GUID.Generate().ToString();
+                NodeEditorWindow.activeGraph.AddNode(node);
+                // 创建节点UI，并且添加到节点图中
+                AddElement(new NodeElement(node));
+            }
+            else Debug.Log("请先选择激活一个Graph对象");
+        }
+        void DeleteNode(Node node)
+        {
+            NodeEditorWindow.activeGraph.DeleteNode(node);
+        }
+        public void RePaint()
+        {
+            DeleteElements(graphElements);
+            if (NodeEditorWindow.activeGraph)
+            {
+                foreach (var node in NodeEditorWindow.activeGraph.Nodes)
+                {
+                    AddElement(new NodeElement(node));
                 }
             }
         }
-
-        void CreateNode(System.Type type)
-        {
-           
-        }
-
-        void CreateNodeView()
-        {
-            // 将对应节点UI添加到节点树视图上
-            //AddElement();
-        }
-
-        // 只要节点树视图发生改变就会触发OnGraphViewChanged方法
-        private GraphViewChange OnGraphViewChanged(GraphViewChange graphViewChange)
-        {
-            // 对所有删除进行遍历记录 只要视图内有元素删除进行判断
-            if (graphViewChange.elementsToRemove != null)
-            {
-                graphViewChange.elementsToRemove.ForEach(elem =>
-                {
-                    
-                });
-            }
-            return graphViewChange;
-        }
-        internal void PopulateView()
-        {
-            // 在节点树视图重新绘制之前需要取消视图变更方法OnGraphViewChanged的订阅
-            // 以防止视图变更记录方法中的信息是上一个节点树的变更信息
-            graphViewChanged -= OnGraphViewChanged;
-            // 清除之前渲染的graphElements图层元素
-            DeleteElements(graphElements);
-            // 在清除节点树视图所有的元素之后重新订阅视图变更方法OnGraphViewChanged
-            graphViewChanged += OnGraphViewChanged;
-        }
+        /// <summary> 获取Port的可连接Port列表 </summary>
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
-            return ports.ToList().Where(
+            return ports.Where(
                 endPort => endPort.direction != startPort.direction &&
                 endPort.node != startPort.node
             ).ToList();
