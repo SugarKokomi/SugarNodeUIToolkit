@@ -4,6 +4,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using System.Linq;
+using PortElement = UnityEditor.Experimental.GraphView.Port;
 
 namespace SugarNode.Editor
 {
@@ -19,8 +20,38 @@ namespace SugarNode.Editor
             this.AddManipulator(new RectangleSelector());// 添加框选
             var styleSheet = Resources.Load<StyleSheet>("NodeEditorWindow_StyleSheet");
             styleSheets.Add(styleSheet);
-            NodeEditorWindow.Window.nodeGridElement = this;
         }
+
+        internal static GraphViewChange OnGraphViewChanged(GraphViewChange graphViewChange)
+        {
+            if (graphViewChange.edgesToCreate != null)
+            {
+                foreach (var edge in graphViewChange.edgesToCreate)
+                {
+                    var inputNodeUI = edge.input.node as NodeElement;
+                    var outputNodeUI = edge.output.node as NodeElement;
+                    NodeEditorWindow.activeGraph.ConnectPort(
+                        outputNodeUI.uiPairsPort[edge.output],
+                        inputNodeUI.uiPairsPort[edge.input]);
+                }
+            }
+            else if (graphViewChange.elementsToRemove != null)
+            {
+                foreach (var element in graphViewChange.elementsToRemove)
+                {
+                    if (element is Edge edge)
+                    {
+                        var inputNodeUI = edge.input.node as NodeElement;
+                        var outputNodeUI = edge.output.node as NodeElement;
+                        NodeEditorWindow.activeGraph.DisConnectPort(
+                            outputNodeUI.uiPairsPort[edge.output],
+                            inputNodeUI.uiPairsPort[edge.input]);
+                    }
+                }
+            }
+            return graphViewChange;
+        }
+
         // 右键创建节点
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
@@ -66,17 +97,37 @@ namespace SugarNode.Editor
         }
         public void RePaint()
         {
+            graphViewChanged -= OnGraphViewChanged;
             DeleteElements(graphElements);
             if (NodeEditorWindow.activeGraph)
             {
+                List<NodeElement> nodeElements = new List<NodeElement>();
                 foreach (var node in NodeEditorWindow.activeGraph.Nodes)
                 {
-                    AddElement(new NodeElement(node));
+                    var nodeElement = new NodeElement(node);
+                    AddElement(nodeElement);//绘制所有的Node
+                    nodeElements.Add(nodeElement);//添加到缓存
+                }
+                //等节点全部绘制完后，再绘制线条
+                foreach (var nodeElement in nodeElements)//遍历每个节点
+                {
+                    IEnumerable<PortElement> outputPorts = nodeElement.uiPairsPort.Keys.Where(port => port.direction == Direction.Output);//获取UI上所有的输出端口
+                    foreach (var outputPort in outputPorts)//遍历节点UI的Output Port，绘制每一条连接
+                    {
+                        IEnumerable<string> guids = NodeEditorWindow.activeGraph.GetOutputPort(nodeElement.uiPairsPort[outputPort]).connectionsGUID;//获取连接的每个输入端口的guid
+                        foreach (var guid in guids)//遍历每个与自己（输出端口）所连接的输入端口,用一条线连接上
+                        {
+                            Edge edge = outputPort.ConnectTo(NodeElement.uiPairsPortReverse[guid]);
+                            AddElement(edge);
+                        }
+                    }
                 }
             }
+            graphViewChanged += OnGraphViewChanged;
+
         }
         /// <summary> 获取Port的可连接Port列表 </summary>
-        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
+        public override List<UnityEditor.Experimental.GraphView.Port> GetCompatiblePorts(UnityEditor.Experimental.GraphView.Port startPort, NodeAdapter nodeAdapter)
         {
             return ports.Where(
                 endPort => endPort.direction != startPort.direction &&

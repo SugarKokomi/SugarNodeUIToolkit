@@ -14,7 +14,8 @@ public class NodeView : UnityEditor.Experimental.GraphView.Node
     public Port input;
     public Port output;
     public TextField textField;
-    public NodeView(Node node){
+    public NodeView(Node node)
+    {
         this.node = node;
         this.title = node.name;
         // 将guid作为Node类中的viewDataKey关联进行后续的视图层管理
