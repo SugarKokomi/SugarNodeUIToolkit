@@ -4,17 +4,14 @@ using UnityEngine;
 public class M_Node1 : SugarNode.Node
 {
     public string str = "Hello World!";
-    public InputPort<string> input;
-    public OutputPort<string> output;
+    public InputPort<string> input = new InputPort<string>();
+    public OutputPort<string> output = new OutputPort<string>();
     protected override void Init()
     {
-        input = new InputPort<string>();
-        output = new OutputPort<string>();
-
         input.GetValue = () => str;
         output.GetValue = () => str + 10086;
 
-        AddPort(input);
-        AddPort(output);
+        InitPort(input);
+        InitPort(output);
     }
 }

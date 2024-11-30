@@ -62,7 +62,8 @@ namespace SugarNode.Editor
                 foreach (var type in types)
                 {
                     if (type.IsAbstract) continue;//无法new出来抽象类、静态类
-                    evt.menu.AppendAction($"{type.Name}", (a) => CreateNode(type, mousePositionInGridSpace));
+                    evt.menu.AppendAction(NodeAttributeHandler.Instance.GetNodeCreateMenu(type),
+                        (a) => CreateNode(type, mousePositionInGridSpace));
                 }
             }
             else Debug.Log("请先选择激活一个Graph对象");
@@ -127,7 +128,7 @@ namespace SugarNode.Editor
 
         }
         /// <summary> 获取Port的可连接Port列表 </summary>
-        public override List<UnityEditor.Experimental.GraphView.Port> GetCompatiblePorts(UnityEditor.Experimental.GraphView.Port startPort, NodeAdapter nodeAdapter)
+        public override List<PortElement> GetCompatiblePorts(PortElement startPort, NodeAdapter nodeAdapter)
         {
             return ports.Where(
                 endPort => endPort.direction != startPort.direction &&

@@ -87,11 +87,7 @@ namespace SugarNode.Editor
         {
             base.OnSelected();
             OnNodeSelected?.Invoke(this);
-            Selection.activeObject = node;
-        }
-        internal void OnDestroy()
-        {
-
+            NodeEditorWindow.Instance.SetSelectionNoEvent(this.node);
         }
     }
 }

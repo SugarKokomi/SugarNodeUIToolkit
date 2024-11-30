@@ -5,31 +5,33 @@ using System;
 
 namespace SugarNode
 {
-    public abstract partial class Graph : ScriptableObject
+    public abstract partial class Graph : ScriptableObject, ICanBulidConnectionCache
     {
         [SerializeField, HideInInspector]
         private List<Node> nodes = new List<Node>();//Graph所管理的所有节点
         public IEnumerable<Node> Nodes => nodes;
+        [NonSerialized]
         private bool hadInit = false;
         [NonSerialized]
         internal Dictionary<string, InputPort> m_allInputPortCache = new Dictionary<string, InputPort>();
         [NonSerialized]
         internal Dictionary<string, OutputPort> m_allOutputPortCache = new Dictionary<string, OutputPort>();
+        /// <summary> 根据guid获取一个输入端口 </summary>
         public InputPort GetInputPort(string guid)
         {
-            TryBulidAllRuntimeConnections();
+            InitCache();
             m_allInputPortCache.TryGetValue(guid, out var value);
             return value;
         }
+        /// <summary> 根据guid获取一个输出端口 </summary>
         public OutputPort GetOutputPort(string guid)
         {
-            TryBulidAllRuntimeConnections();
+            InitCache();
             m_allOutputPortCache.TryGetValue(guid, out var value);
             return value;
         }
-        // internal void AddPortReference()
-        /// <summary> 构建一个运行时的节点连接关系 </summary>
-        public void BuildRuntimeConnections(OutputPort outputPort)
+        //构建一个运行时的节点连接关系
+        private void BuildRuntimeConnection(OutputPort outputPort)
         {
             foreach (var inputPortGUID in outputPort.m_connectionsGUID)
             {
@@ -44,31 +46,50 @@ namespace SugarNode
                 outputPort.m_connections.Add(inputPort);
             }
         }
-        private void BulidAllRuntimeConnections()
+        /// <summary> 清除全部的连接缓存 </summary>
+        public void TryClearAllRuntimeCache()
         {
-            //添加上自身节点的全部端口的引用
+            //逐级清除所有运行时缓存
+            //清除Port与Port之间的连接引用
+            foreach (ICanClearConnectionCache inputCache in m_allInputPortCache.Values)
+                inputCache.DisposeCache();
+            foreach (ICanClearConnectionCache outputCache in m_allOutputPortCache.Values)
+                outputCache.DisposeCache();
+
+            //清除Node与Port之间的引用
+            foreach (ICanBulidConnectionCache nodeCache in nodes)
+                nodeCache.DisposeCache();
+
+            (this as ICanClearConnectionCache).DisposeCache();
+        }
+
+        public void InitCache()
+        {
+            if (hadInit) return;
+            hadInit = true;
+            //构建Graph与Port之间的引用
             foreach (var node in nodes)
             {
                 foreach (var input in node.Inputs)
-                    m_allInputPortCache.TryAdd(input.guid, input);
+                    m_allInputPortCache.AddOrSetValue(input.guid, input);
                 foreach (var output in node.Outputs)
-                    m_allOutputPortCache.TryAdd(output.guid, output);
+                    m_allOutputPortCache.AddOrSetValue(output.guid, output);
             }
-            //遍历所有输出-输入关系，构建运行时的连接缓存
+            //遍历所有OutputPort，构建与InputPort之间的互相引用（连接信息存储在OutputPort里）
             foreach (var kvp in m_allOutputPortCache)
-                BuildRuntimeConnections(kvp.Value);
+                BuildRuntimeConnection(kvp.Value);
         }
-        public void TryBulidAllRuntimeConnections()
+        void ICanClearConnectionCache.DisposeCache()
         {
-            if (!hadInit)
-            {
-                BulidAllRuntimeConnections();
-                hadInit = true;
-            }
+            if (!hadInit) return;
+            hadInit = false;
+            //清除自己与Port之间的引用
+            m_allInputPortCache.Clear();
+            m_allOutputPortCache.Clear();
         }
     }
 #if UNITY_EDITOR
-    public partial class Graph
+    partial class Graph
     {
         public void ConnectPort(string outputPortGUID, string inputPortGUID)
         {
@@ -83,6 +104,8 @@ namespace SugarNode
                 outputPort.m_connectionsGUID.Add(inputPort.guid);
             outputPort.m_connections.Add(inputPort);
             inputPort.m_connections.Add(outputPort);
+            EditorUtility.SetDirty(this);
+            // AssetDatabase.SaveAssets();//可用于AutoSave
         }
         public void DisConnectPort(string outputPortGUID, string inputPortGUID)
         {
@@ -96,26 +119,28 @@ namespace SugarNode
             outputPort.m_connectionsGUID.Remove(inputPort.guid);
             outputPort.m_connections.Remove(inputPort);
             inputPort.m_connections.Remove(outputPort);
+            EditorUtility.SetDirty(this);
+            // AssetDatabase.SaveAssets();
         }
         /// <summary> 每次创建节点时，需要单独构建自己的连接缓存 </summary>
         private void BulidEditorRuntimeConnections(Node node)
         {
             foreach (var input in node.Inputs)
-                m_allInputPortCache.TryAdd(input.guid, input);
+                m_allInputPortCache.AddOrSetValue(input.guid, input);
             foreach (var output in node.Outputs)
             {
-                m_allOutputPortCache.TryAdd(output.guid, output);
-                BuildRuntimeConnections(output);
+                m_allOutputPortCache.AddOrSetValue(output.guid, output);
+                BuildRuntimeConnection(output);
             }
         }
         public void AddNode(Node node)
         {
             nodes.Add(node);
             node.m_graph = this;
-            node.InitWhenCreate();
             BulidEditorRuntimeConnections(node);
             AssetDatabase.AddObjectToAsset(node, this);
             AssetDatabase.SaveAssets();
+            Undo.RegisterCreatedObjectUndo(node, $"创建{node.name}");
         }
         public bool DeleteNode(Node node)
         {

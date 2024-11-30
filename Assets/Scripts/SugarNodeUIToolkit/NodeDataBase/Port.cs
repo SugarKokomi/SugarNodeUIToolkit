@@ -2,29 +2,26 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using UnityEditor;
 
 namespace SugarNode
 {
     [HideInInspector, Serializable]
-    public class Port
+    public abstract class Port : ICanClearConnectionCache
+    //Port无法自己建立缓存，其连接网络需要Graph拿到全部Node才能帮忙构建。但是它可以自己清除自己的缓存
     {
-        public Port(Func<List<Port>, List<Port>> connectionCondition = null)
+        internal Port(Func<List<Port>, List<Port>> connectionCondition = null)
         {
-/* #if UNITY_EDITOR
-            m_guid = GUID.Generate().ToString();
-#endif */
             WhoCanConnectMe = connectionCondition ?? DefaultConnectCondition;
             GetValue = DefaultGetValue;
         }
 
         //自己的GUID，用于数据持久化存储
-        [SerializeField/* , HideInInspector */]
+        [SerializeField, HideInInspector]
         internal string m_guid;
         /// <summary> 用于Port的唯一标识 </summary>
         public string guid => m_guid;
 
-        [SerializeField/* , HideInInspector */]
+        [SerializeField, HideInInspector]
         internal int m_maxConnectionCount = -1;
         /// <summary> 端口的最大连接数量。 </summary>
         public int maxConnectionCount => m_maxConnectionCount;
@@ -43,6 +40,7 @@ namespace SugarNode
         }
         public Func<object> GetValue;
         protected virtual object DefaultGetValue() => null;
+        public abstract void DisposeCache();//以抽象方法要求每个子类实现
     }
     [HideInInspector, Serializable]
     public class InputPort : Port
@@ -51,6 +49,11 @@ namespace SugarNode
         [NonSerialized]
         internal HashSet<OutputPort> m_connections = new HashSet<OutputPort>();
         public IEnumerable<OutputPort> Connections => m_connections;
+
+        public override void DisposeCache()
+        {
+            m_connections.Clear();
+        }
     }
     [HideInInspector, Serializable]
     public class OutputPort : Port
@@ -63,6 +66,11 @@ namespace SugarNode
         [SerializeField, HideInInspector]
         internal List<string> m_connectionsGUID = new List<string>();
         public IEnumerable<string> connectionsGUID => m_connectionsGUID;
+
+        public override void DisposeCache()
+        {
+            m_connections.Clear();
+        }
     }
     [HideInInspector, Serializable]
     public class InputPort<T> : InputPort
