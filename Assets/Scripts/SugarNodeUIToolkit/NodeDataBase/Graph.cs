@@ -11,26 +11,24 @@ namespace SugarNode
         private List<Node> nodes = new List<Node>();//Graph所管理的所有节点
         public IEnumerable<Node> Nodes => nodes;
         [NonSerialized]
-        private bool hadInit = false;
+        private bool hadInitSelf = false, hadInitAll = false;
         [NonSerialized]
-        internal Dictionary<string, InputPort> m_allInputPortCache = new Dictionary<string, InputPort>();
+        private Dictionary<string, InputPort> m_allInputPortCache;
         [NonSerialized]
-        internal Dictionary<string, OutputPort> m_allOutputPortCache = new Dictionary<string, OutputPort>();
+        private Dictionary<string, OutputPort> m_allOutputPortCache;
         /// <summary> 根据guid获取一个输入端口 </summary>
         public InputPort GetInputPort(string guid)
         {
-            InitCache();
             m_allInputPortCache.TryGetValue(guid, out var value);
             return value;
         }
         /// <summary> 根据guid获取一个输出端口 </summary>
         public OutputPort GetOutputPort(string guid)
         {
-            InitCache();
             m_allOutputPortCache.TryGetValue(guid, out var value);
             return value;
         }
-        //构建一个运行时的节点连接关系
+        /// <summary> 构建一个OutputPort与其下所有的InputPort的互相连接关系 </summary>
         private void BuildRuntimeConnection(OutputPort outputPort)
         {
             foreach (var inputPortGUID in outputPort.m_connectionsGUID)
@@ -47,27 +45,57 @@ namespace SugarNode
             }
         }
         /// <summary> 清除全部的连接缓存 </summary>
+        public void TryBuildAllRuntimeCache()
+        {
+            //逐级构建所有运行时缓存
+            if (hadInitAll) return;
+            hadInitAll = true;
+
+            //构建Node与自己Port的互相引用
+            foreach (ICanBulidConnectionCache nodeInitializer in nodes)
+                nodeInitializer.InitCache();
+
+            //构建Graph与Port之间的引用    
+            ICanBulidConnectionCache graphInitializer = this;
+            graphInitializer.InitCache();
+
+            //初始化所有的Port
+            foreach (ICanBulidConnectionCache portInitializer in m_allInputPortCache.Values)
+                portInitializer.InitCache();
+            foreach (ICanBulidConnectionCache portInitializer in m_allOutputPortCache.Values)
+                portInitializer.InitCache();
+
+            //初始化完毕，将两个Port之间互相引用起来
+            foreach (var outputPort in m_allOutputPortCache.Values)
+                BuildRuntimeConnection(outputPort);
+        }
         public void TryClearAllRuntimeCache()
         {
             //逐级清除所有运行时缓存
+            if (!hadInitAll) return;
+            hadInitAll = false;
+
             //清除Port与Port之间的连接引用
-            foreach (ICanClearConnectionCache inputCache in m_allInputPortCache.Values)
-                inputCache.DisposeCache();
-            foreach (ICanClearConnectionCache outputCache in m_allOutputPortCache.Values)
-                outputCache.DisposeCache();
+            foreach (ICanClearConnectionCache inputPortDisposer in m_allInputPortCache.Values)
+                inputPortDisposer.DisposeCache();
+            foreach (ICanClearConnectionCache outputPortDisposer in m_allOutputPortCache.Values)
+                outputPortDisposer.DisposeCache();
 
             //清除Node与Port之间的引用
-            foreach (ICanBulidConnectionCache nodeCache in nodes)
-                nodeCache.DisposeCache();
+            foreach (ICanBulidConnectionCache nodeDisposer in nodes)
+                nodeDisposer.DisposeCache();
 
-            (this as ICanClearConnectionCache).DisposeCache();
+            //清除Graph与Port之间的引用
+            ICanBulidConnectionCache graphDisposer = this;
+            graphDisposer.DisposeCache();
         }
-
-        public void InitCache()
+        void ICanBulidConnectionCache.InitCache()
         {
-            if (hadInit) return;
-            hadInit = true;
-            //构建Graph与Port之间的引用
+            if (hadInitSelf) return;
+            hadInitSelf = true;
+            m_allInputPortCache = new Dictionary<string, InputPort>();
+            m_allOutputPortCache = new Dictionary<string, OutputPort>();
+            //构建自己对Port的引用
             foreach (var node in nodes)
             {
                 foreach (var input in node.Inputs)
@@ -75,17 +103,16 @@ namespace SugarNode
                 foreach (var output in node.Outputs)
                     m_allOutputPortCache.AddOrSetValue(output.guid, output);
             }
-            //遍历所有OutputPort，构建与InputPort之间的互相引用（连接信息存储在OutputPort里）
-            foreach (var kvp in m_allOutputPortCache)
-                BuildRuntimeConnection(kvp.Value);
         }
         void ICanClearConnectionCache.DisposeCache()
         {
-            if (!hadInit) return;
-            hadInit = false;
+            if (!hadInitSelf) return;
+            hadInitSelf = false;
             //清除自己与Port之间的引用
             m_allInputPortCache.Clear();
             m_allOutputPortCache.Clear();
+            m_allInputPortCache = null;
+            m_allOutputPortCache = null;
         }
     }
 #if UNITY_EDITOR
@@ -125,13 +152,15 @@ namespace SugarNode
         /// <summary> 每次创建节点时，需要单独构建自己的连接缓存 </summary>
         private void BulidEditorRuntimeConnections(Node node)
         {
+            //初始化Node与Port的连接
+            ICanBulidConnectionCache nodeInitializer = node;
+            nodeInitializer.InitCache();
+            //初始化Graph与Port的连接
             foreach (var input in node.Inputs)
                 m_allInputPortCache.AddOrSetValue(input.guid, input);
             foreach (var output in node.Outputs)
-            {
                 m_allOutputPortCache.AddOrSetValue(output.guid, output);
-                BuildRuntimeConnection(output);
-            }
+                // BuildRuntimeConnection(output);//新创建的节点，其所有连接一定是空的，就不用创建Port之间的互相连接了
         }
         public void AddNode(Node node)
         {

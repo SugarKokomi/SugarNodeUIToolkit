@@ -3,10 +3,10 @@ using UnityEngine;
 namespace SugarNode
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public sealed class NodeTitleAttribute : Attribute
+    public sealed class NodeDefaultNameAttribute : Attribute
     {
         public string name;
-        public NodeTitleAttribute(string name = "")
+        public NodeDefaultNameAttribute(string name = "")
         {
             this.name = name;
         }

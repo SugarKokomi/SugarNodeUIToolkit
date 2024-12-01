@@ -65,8 +65,15 @@ namespace SugarNode.Editor
                     evt.menu.AppendAction(NodeAttributeHandler.Instance.GetNodeCreateMenu(type),
                         (a) => CreateNode(type, mousePositionInGridSpace));
                 }
+
+                BuildOtherMenu(evt);
             }
             else Debug.Log("请先选择激活一个Graph对象");
+        }
+        private void BuildOtherMenu(ContextualMenuPopulateEvent evt)
+        {
+            evt.menu.AppendSeparator();
+            evt.menu.AppendAction("刷新", _ => RePaint());
         }
         //Delect键删除节点
         public override EventPropagation DeleteSelection()
@@ -83,7 +90,7 @@ namespace SugarNode.Editor
             if (NodeEditorWindow.activeGraph)
             {
                 Node node = ScriptableObject.CreateInstance(type) as Node;
-                node.name = type.Name;
+                node.name = NodeAttributeHandler.Instance.GetNodeDefaultName(type);
                 node.gridPos = mousePositionInGridSpace;
                 node.guid = GUID.Generate().ToString();
                 NodeEditorWindow.activeGraph.AddNode(node);

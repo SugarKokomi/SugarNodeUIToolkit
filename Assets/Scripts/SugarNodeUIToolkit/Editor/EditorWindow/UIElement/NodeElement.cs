@@ -1,11 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UIElements;
 using PortElement = UnityEditor.Experimental.GraphView.Port;
 using UnityEditor;
+using UnityEngine.UIElements;
 
 namespace SugarNode.Editor
 {
@@ -15,6 +14,7 @@ namespace SugarNode.Editor
         internal Node node;
         internal Dictionary<PortElement, string> uiPairsPort;
         internal static Dictionary<string, PortElement> uiPairsPortReverse;//前者的反向字典
+        Label titleTips;
         public NodeElement(Node node) : base("Assets/Scripts/SugarNodeUIToolkit/Editor/Resources/NodeElement.uxml")
         {
             // Resources.Load<VisualTreeAsset>("NodeElement").CloneTree(this);
@@ -28,6 +28,8 @@ namespace SugarNode.Editor
             uiPairsPort = new Dictionary<PortElement, string>();
             uiPairsPortReverse ??= new Dictionary<string, PortElement>();
             InitPort();
+            titleTips = this.Q<Label>("title-Tips");
+            titleTips.text = node.GetTips();
         }
         private void InitPort()
         {
@@ -39,6 +41,7 @@ namespace SugarNode.Editor
                     PortElement.Capacity.Multi,
                     GetPortType(inputPort)
                 );
+                portUI.portName = inputPort.PortName;
                 uiPairsPort.Add(portUI, inputPort.guid);
                 if (uiPairsPortReverse.ContainsKey(inputPort.guid))
                     uiPairsPortReverse[inputPort.guid] = portUI;
@@ -53,6 +56,7 @@ namespace SugarNode.Editor
                     PortElement.Capacity.Multi,
                     GetPortType(outputPort)
                 );
+                portUI.portName = outputPort.PortName;
                 uiPairsPort.Add(portUI, outputPort.guid);
                 if (uiPairsPortReverse.ContainsKey(outputPort.guid))
                     uiPairsPortReverse[outputPort.guid] = portUI;
@@ -60,7 +64,6 @@ namespace SugarNode.Editor
                 outputContainer.Add(portUI);
             }
         }
-
         private static Type GetPortType(Port port)
         {
             Type objectType = port.GetType();
@@ -87,7 +90,8 @@ namespace SugarNode.Editor
         {
             base.OnSelected();
             OnNodeSelected?.Invoke(this);
-            NodeEditorWindow.Instance.SetSelectionNoEvent(this.node);
+            // NodeEditorWindow.Instance.SetSelectionNoEvent(this.node);
+            Selection.activeObject = node;
         }
     }
 }

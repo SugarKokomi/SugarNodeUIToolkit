@@ -28,14 +28,14 @@ namespace SugarNode.Editor
             NodeElement.OnNodeSelected += inspector.UpdateSelection;
             nodeGridElement.graphViewChanged += NodeGridElement.OnGraphViewChanged;
         }
-        private void OnEnable()
+        private void OnFocus()
         {
-            Selection.selectionChanged += OnSelectionChange;
+            if (!activeGraph)
+                nodeGridElement?.RePaint();//Unity执行重编译后，会清除所有缓存字段，OnFocus()此时会比CreateGUI()更先调用,nodeGridElement是在CreateGUI()里初始化的，会导致其null一次
         }
-        private void OnDisable()
+        private void OnDestroy()
         {
             NodeElement.OnNodeSelected -= inspector.UpdateSelection;
-            Selection.selectionChanged -= OnSelectionChange;
             nodeGridElement.graphViewChanged -= NodeGridElement.OnGraphViewChanged;
 
             m_instance = null;
@@ -45,7 +45,7 @@ namespace SugarNode.Editor
                 activeGraph = null;
             }
         }
-        void OnSelectionChange()
+        /* void OnSelectionChange()
         {
             if (Selection.activeObject is Graph graph)
                 TrySwitchGraphAndRepaint(graph);
@@ -57,14 +57,18 @@ namespace SugarNode.Editor
             Selection.selectionChanged -= OnSelectionChange;
             Selection.activeObject = node;
             Selection.selectionChanged += OnSelectionChange;
-        }
+        } */
         /// <summary> 切换激活的节点图，并进行重绘制 </summary>
         void TrySwitchGraphAndRepaint(Graph graph)
         {
             if (activeGraph == graph) return;
-            else if (activeGraph) activeGraph.TryClearAllRuntimeCache();
+            if (activeGraph) activeGraph.TryClearAllRuntimeCache();
+            if (graph)
+            {
+                graph.TryBuildAllRuntimeCache();
+                titleContent.text = graph.name;
+            }
             activeGraph = graph;
-            titleContent.text = graph.name;
             nodeGridElement.RePaint();
         }
         [OnOpenAsset]

@@ -1,0 +1,153 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8143873839929057725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 736669941ee16c04d8980f9e53c146be, type: 3}
+  m_Name: "2\u53F7\u5BF9\u8BDD\u8282\u70B9"
+  m_EditorClassIdentifier: 
+  m_graph: {fileID: 11400000}
+  guid: bf92b0598f0027e44a5e5e1abff15cd7
+  gridPos: {x: 205.99994, y: 287}
+  num: 123
+  input:
+    m_guid: be10ad81405b7504f8787b52276876f4
+    portName: Input
+    m_maxConnectionCount: -1
+    defaultValue: 0
+  defaultOutput:
+    m_guid: b70be1d46c2a0004b80b7a2cafb268f1
+    portName: "\u9ED8\u8BA4\u5206\u652F"
+    m_maxConnectionCount: -1
+    m_connectionsGUID: []
+  output1:
+    m_guid: 098390dc9f6f21b4cbd53e494b5505fe
+    portName: "1\u53F7\u5206\u652F"
+    m_maxConnectionCount: -1
+    m_connectionsGUID: []
+    defaultValue: 
+  output2:
+    m_guid: 37b376e5923bfe041a9de21a450df876
+    portName: "2\u53F7\u5206\u652F"
+    m_maxConnectionCount: -1
+    m_connectionsGUID:
+    - 5d76f043aa13e414eb058d5ab6b33dd7
+    defaultValue: 
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bac2d157018c72f40b3a646db1ddae0c, type: 3}
+  m_Name: 54321
+  m_EditorClassIdentifier: 
+  nodes:
+  - {fileID: 6526299513921974100}
+  - {fileID: -8143873839929057725}
+  - {fileID: 9134469626289214966}
+  - {fileID: 4987362816497338408}
+--- !u!114 &4987362816497338408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 736669941ee16c04d8980f9e53c146be, type: 3}
+  m_Name: "2\u53F7\u5BF9\u8BDD\u8282\u70B9"
+  m_EditorClassIdentifier: 
+  m_graph: {fileID: 11400000}
+  guid: d33de22171a58f8469d0514e8683a74a
+  gridPos: {x: 205.99988, y: 543}
+  num: 123
+  input:
+    m_guid: 903c7e32bf4cc074f98bf0801fe9d145
+    portName: Input
+    m_maxConnectionCount: -1
+    defaultValue: 0
+  defaultOutput:
+    m_guid: 5a04f918a075aaa4485e4c0b81eb475f
+    portName: "\u9ED8\u8BA4\u5206\u652F"
+    m_maxConnectionCount: -1
+    m_connectionsGUID: []
+  output1:
+    m_guid: 36621b9f3a82b074e98757bb2629cf22
+    portName: "1\u53F7\u5206\u652F"
+    m_maxConnectionCount: -1
+    m_connectionsGUID: []
+    defaultValue: 
+  output2:
+    m_guid: c7f7c82a1364c594b9f4c9fafec16c4c
+    portName: "2\u53F7\u5206\u652F"
+    m_maxConnectionCount: -1
+    m_connectionsGUID:
+    - 9815c9114c925874899d4a347841f866
+    defaultValue: 
+--- !u!114 &6526299513921974100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae21d560db8ff3a49becdda6ac85c90f, type: 3}
+  m_Name: "1\u53F7\u5BF9\u8BDD\u8282\u70B9"
+  m_EditorClassIdentifier: 
+  m_graph: {fileID: 11400000}
+  guid: 9ed21be20229d4e4c88aa1815952698e
+  gridPos: {x: 210.27748, y: 179.86}
+  str: Hello World!
+  input:
+    m_guid: 9815c9114c925874899d4a347841f866
+    portName: "\u8F93\u5165"
+    m_maxConnectionCount: -1
+    defaultValue: Hello World!
+  output:
+    m_guid: 2b7b6723703d52f45a246b0086f3f124
+    portName: "\u8F93\u51FA"
+    m_maxConnectionCount: -1
+    m_connectionsGUID:
+    - be10ad81405b7504f8787b52276876f4
+    defaultValue: Hello World!
+--- !u!114 &9134469626289214966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae21d560db8ff3a49becdda6ac85c90f, type: 3}
+  m_Name: "1\u53F7\u5BF9\u8BDD\u8282\u70B9"
+  m_EditorClassIdentifier: 
+  m_graph: {fileID: 11400000}
+  guid: d076bd36cd6503a4fbc267f0fbd336c0
+  gridPos: {x: 214, y: 436}
+  str: Hello World!
+  input:
+    m_guid: 5d76f043aa13e414eb058d5ab6b33dd7
+    portName: "\u8F93\u5165"
+    m_maxConnectionCount: -1
+    defaultValue: Hello World!
+  output:
+    m_guid: d60b7e7949eeaa5439b4dbe63d92a419
+    portName: "\u8F93\u51FA"
+    m_maxConnectionCount: -1
+    m_connectionsGUID:
+    - 903c7e32bf4cc074f98bf0801fe9d145
+    defaultValue: Hello World!
