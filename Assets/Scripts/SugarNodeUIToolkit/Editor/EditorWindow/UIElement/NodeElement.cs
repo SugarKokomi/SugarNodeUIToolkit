@@ -5,6 +5,7 @@ using UnityEngine;
 using PortElement = UnityEditor.Experimental.GraphView.Port;
 using UnityEditor;
 using UnityEngine.UIElements;
+using System.Linq;
 
 namespace SugarNode.Editor
 {
@@ -14,10 +15,8 @@ namespace SugarNode.Editor
         internal Node node;
         internal Dictionary<PortElement, string> uiPairsPort;
         internal static Dictionary<string, PortElement> uiPairsPortReverse;//前者的反向字典
-        Label titleTips;
         public NodeElement(Node node) : base("Assets/Scripts/SugarNodeUIToolkit/Editor/Resources/NodeElement.uxml")
         {
-            // Resources.Load<VisualTreeAsset>("NodeElement").CloneTree(this);
             this.node = node;
             this.title = node.name;
             this.viewDataKey = node.guid;
@@ -27,9 +26,11 @@ namespace SugarNode.Editor
 
             uiPairsPort = new Dictionary<PortElement, string>();
             uiPairsPortReverse ??= new Dictionary<string, PortElement>();
+
             InitPort();
-            titleTips = this.Q<Label>("title-Tips");
-            titleTips.text = node.GetTips();
+            SetTipsText();
+            SetWidth();
+            SetColor();
         }
         private void InitPort()
         {
@@ -92,6 +93,33 @@ namespace SugarNode.Editor
             OnNodeSelected?.Invoke(this);
             // NodeEditorWindow.Instance.SetSelectionNoEvent(this.node);
             Selection.activeObject = node;
+        }
+        private void SetTipsText()
+        {
+            var titleTips = this.Q<Label>("title-Tips");
+            titleTips.text = node.GetTips();
+        }
+        private void SetWidth()
+        {
+            var root = this.Q("BackGround");
+            float minWidth = NodeAttributeHandler.Instance.GetNodeWidth(node.GetType());
+            root.style.minWidth = minWidth > 0 ? minWidth : StyleKeyword.Auto;
+        }
+        private void SetColor()
+        {
+            var root = this.Q("BackGround");
+            var title = this.Q("title-label");
+            var color = NodeAttributeHandler.Instance.GetNodeColor(node.GetType());
+            var bgColor = color * 0.2f;
+            bgColor.a = 1;
+            var titleColor = color * 0.5f;
+            titleColor.a = 1;
+            root.style.borderTopColor = titleColor;
+            root.style.borderBottomColor = titleColor;
+            root.style.borderLeftColor = titleColor;
+            root.style.borderRightColor = titleColor;
+            title.style.backgroundColor = titleColor;
+            root.style.backgroundColor = bgColor;
         }
     }
 }

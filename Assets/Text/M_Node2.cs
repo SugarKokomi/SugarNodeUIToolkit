@@ -3,6 +3,8 @@ using UnityEngine;
 
 [NodeDefaultName("2号对话节点")]
 [CreateMenu("测试对话图/2号节点(带有两个分支)")]
+[NodeWidth(300)]
+[NodeColor(0.8f,0,0)]
 public class M_Node2 : BaseNode
 {
     public int num = 123;

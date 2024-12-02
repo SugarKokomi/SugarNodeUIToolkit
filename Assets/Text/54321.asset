@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: bf92b0598f0027e44a5e5e1abff15cd7
-  gridPos: {x: 205.99994, y: 287}
+  gridPos: {x: 397, y: 149}
   num: 123
+  test_Tips: "\u65E5\u5948"
   input:
     m_guid: be10ad81405b7504f8787b52276876f4
     portName: Input
@@ -70,8 +71,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: d33de22171a58f8469d0514e8683a74a
-  gridPos: {x: 205.99988, y: 543}
+  gridPos: {x: 405, y: 432}
   num: 123
+  test_Tips: "\u65E5\u5948"
   input:
     m_guid: 903c7e32bf4cc074f98bf0801fe9d145
     portName: Input

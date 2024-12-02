@@ -57,15 +57,13 @@ namespace SugarNode.Editor
         {
             if (NodeEditorWindow.activeGraph)
             {
-                var types = TypeCache.GetTypesDerivedFrom<Node>();
+                var allNodesWhichCanCreateInThisGraph = NodeAttributeHandler.Instance.GetGraphAllowNodesType(NodeEditorWindow.activeGraph.GetType());
                 Vector2 mousePositionInGridSpace = this.contentViewContainer.WorldToLocal(evt.mousePosition);
-                foreach (var type in types)
+                foreach (var nodeType in allNodesWhichCanCreateInThisGraph)
                 {
-                    if (type.IsAbstract) continue;//无法new出来抽象类、静态类
-                    evt.menu.AppendAction(NodeAttributeHandler.Instance.GetNodeCreateMenu(type),
-                        (a) => CreateNode(type, mousePositionInGridSpace));
+                    evt.menu.AppendAction(NodeAttributeHandler.Instance.GetNodeCreateMenu(nodeType),
+                        _ => CreateNode(nodeType, mousePositionInGridSpace));
                 }
-
                 BuildOtherMenu(evt);
             }
             else Debug.Log("请先选择激活一个Graph对象");

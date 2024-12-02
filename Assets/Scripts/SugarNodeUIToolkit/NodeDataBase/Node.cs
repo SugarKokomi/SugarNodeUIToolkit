@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 namespace SugarNode
 {
@@ -23,7 +24,9 @@ namespace SugarNode
         [NonSerialized] internal List<InputPort> m_inputs;
         [NonSerialized] internal List<OutputPort> m_outputs;
         public IEnumerable<InputPort> Inputs => m_inputs;
+        public InputPort DefaultInput => m_inputs.FirstOrDefault();
         public IEnumerable<OutputPort> Outputs => m_outputs;
+        public OutputPort DefaultOutput => m_outputs.FirstOrDefault();
         void ICanBulidConnectionCache.InitCache()
         {
             if (hadInitSelf) return;

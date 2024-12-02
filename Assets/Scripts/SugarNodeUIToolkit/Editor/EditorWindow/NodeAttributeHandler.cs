@@ -4,7 +4,6 @@ using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
-
 namespace SugarNode.Editor
 {
     internal class NodeAttributeHandler
@@ -13,7 +12,7 @@ namespace SugarNode.Editor
         internal static NodeAttributeHandler Instance { get { m_instance ??= new NodeAttributeHandler(); return m_instance; } set { m_instance = value; } }
         private Dictionary<Type, string> createMenuAttributes = new Dictionary<Type, string>();
         private Dictionary<Type, string> nodeNameAttributes = new Dictionary<Type, string>();
-        private Dictionary<Type, uint> nodeWidthAttributes = new Dictionary<Type, uint>();
+        private Dictionary<Type, float> nodeWidthAttributes = new Dictionary<Type, float>();
         private Dictionary<Type, Color> nodeColorAttributes = new Dictionary<Type, Color>();
         private Dictionary<Type, HashSet<Type>> graphAllowNodesAttributes = new Dictionary<Type, HashSet<Type>>();
         private Dictionary<Type, List<(Type, uint)>> graphRequiredNodesAttributes = new Dictionary<Type, List<(Type, uint)>>();
@@ -43,14 +42,16 @@ namespace SugarNode.Editor
             }
         }
         /// <summary> 通过NodeWidthAttribute获取节点视图宽度 </summary>
-        internal uint GetNodeWidth(Type nodeType)
+        internal float GetNodeWidth(Type nodeType)
         {
             if (nodeWidthAttributes.TryGetValue(nodeType, out var width))
                 return width;
             else
             {
                 var attribute = nodeType.GetCustomAttribute<NodeWidthAttribute>();
-                nodeWidthAttributes.Add(nodeType, attribute?.width ?? 100);
+                if (attribute != null)
+                    nodeWidthAttributes.Add(nodeType, attribute.width);
+                else nodeWidthAttributes.Add(nodeType, -1);
                 return nodeWidthAttributes[nodeType];
             }
         }
@@ -66,7 +67,8 @@ namespace SugarNode.Editor
                 return nodeColorAttributes[nodeType];
             }
         }
-        /// <summary> 通过OnlyAllowNodeAttribute获取Graph里只能创建哪些节点 </summary>
+        /// <summary> 通过OnlyAllowNodeAttribute获取Graph里只能创建哪些节点。 </summary>
+        /// 会忽略抽象类，会计算Graph挂载的全部[OnlyAllowNode(...)]标签
         internal IEnumerable<Type> GetGraphAllowNodesType(Type graphType)
         {
             if (graphAllowNodesAttributes.TryGetValue(graphType, out var nodeTypes))

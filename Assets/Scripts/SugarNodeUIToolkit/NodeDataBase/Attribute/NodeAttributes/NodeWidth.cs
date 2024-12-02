@@ -5,12 +5,12 @@ namespace SugarNode
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
     public sealed class NodeWidthAttribute : Attribute
     {
-        public uint width;
+        public float width;
         /// <summary>
         /// 在网格空间下指定节点的宽度
         /// </summary>
         /// <param name="width">1代表宽为1个网格（粗稀线）</param>
-        public NodeWidthAttribute(uint width)
+        public NodeWidthAttribute(float width)
         {
             this.width = width;
         }

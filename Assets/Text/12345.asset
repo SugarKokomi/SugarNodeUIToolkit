@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: d16c66be81da3014f947e04e03f7b473
-  gridPos: {x: 56.5, y: 610}
+  gridPos: {x: -239.62811, y: 302.0616}
   num: 123
   test_Tips: "\u65E5\u5948"
   input:
@@ -54,7 +54,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: 935b9de1940f68442ac887dd37289d2b
-  gridPos: {x: -244, y: 264}
+  gridPos: {x: -798.6282, y: 330.0616}
   str: "\u82E5\u8D76\u6765\u72AF\uFF0C\u5FC5\u53EB\u4F60\u5927\u8D25\u800C\u5F52"
   input:
     m_guid: 989f9197dcecdb34bb0e9a40b09001cb
@@ -82,7 +82,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: df62f4d5af5be3a4691cea9a6453528f
-  gridPos: {x: -57.352646, y: 265}
+  gridPos: {x: -582.6281, y: 303.0616}
   num: 123
   test_Tips: "\u795E\u91CC\u7EEB\u534E"
   input:
@@ -140,7 +140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: d4ff2e1727ffd67418c2c1757c956fe7
-  gridPos: {x: 121, y: 257}
+  gridPos: {x: -788.6282, y: 445.06165}
   str: Hello World!
   input:
     m_guid: 4f617d71b38b8e146950be116a1482e5
@@ -168,7 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: c8f8bc6071f4d344b90769e15fcea31a
-  gridPos: {x: 277, y: 269}
+  gridPos: {x: -633.6281, y: 464.0616}
   num: 123
   test_Tips: "\u5C0F\u6893"
   input:
@@ -208,7 +208,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: 1d9693c0c85830e4ea2648fa7295090b
-  gridPos: {x: 285, y: 632}
+  gridPos: {x: -231.62811, y: 472.0616}
   num: 123
   test_Tips: "\u67DA\u5B50"
   input:

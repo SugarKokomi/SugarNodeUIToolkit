@@ -3,6 +3,7 @@ using UnityEngine;
 public abstract class BaseNode : SugarNode.Node { }
 [NodeDefaultName("1号对话节点")]
 [CreateMenu("测试对话图/1号节点")]
+[NodeColor(0f,1,1)]
 public class M_Node1 : BaseNode
 {
     public string str = "Hello World!";
