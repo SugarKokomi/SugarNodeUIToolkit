@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Assets/SugarNode/Editor/Resources/NodeElement_StyleSheet.uss?fileID=7433441132597879392&amp;guid=0fb36c16309a9bc4d8384d4f5871b425&amp;type=3#NodeElement_StyleSheet" />
+    <ui:VisualElement name="BackGround">
+        <ui:VisualElement name="NodeBody">
+            <ui:Label name="title-label" text="节点名" />
+            <ui:Label name="title-Tips" text="这是一个普通节点&#10;这块区域用于输入备注" />
+            <ui:VisualElement name="InOutPort" style="min-height: 30px;">
+                <ui:VisualElement name="InPorts" style="flex-grow: 1; min-width: auto;">
+                    <ui:VisualElement name="input" />
+                </ui:VisualElement>
+                <ui:VisualElement name="OutPorts" style="flex-grow: 1; min-width: auto;">
+                    <ui:VisualElement name="output" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="contents" style="flex-grow: 1;" />
+            <ui:VisualElement name="title-button-container" />
+            <ui:VisualElement name="collapse-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

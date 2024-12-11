@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: d16c66be81da3014f947e04e03f7b473
-  gridPos: {x: -239.62811, y: 302.0616}
+  gridPos: {x: -211, y: 299}
   num: 123
   test_Tips: "\u65E5\u5948"
   input:

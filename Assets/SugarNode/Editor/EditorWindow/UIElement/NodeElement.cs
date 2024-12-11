@@ -15,7 +15,10 @@ namespace SugarNode.Editor
         internal Node node;
         internal Dictionary<PortElement, string> uiPairsPort;
         internal static Dictionary<string, PortElement> uiPairsPortReverse;//前者的反向字典
-        public NodeElement(Node node) : base("Assets/Scripts/SugarNodeUIToolkit/Editor/Resources/NodeElement.uxml")
+        // StyleSheet styleSheet;
+        public NodeElement(Node node) :
+            base(NodeEditorUtility.Instance.GetSugarNodeRootFolder() +
+            "/Editor/Resources/NodeElement_TreeAsset.uxml")
         {
             this.node = node;
             this.title = node.name;
@@ -31,6 +34,9 @@ namespace SugarNode.Editor
             SetTipsText();
             SetWidth();
             SetColor();
+
+            /* styleSheet = Resources.Load<StyleSheet>("NodeElement_StyleSheet");
+            styleSheets.Add(styleSheet); */
         }
         private void InitPort()
         {
@@ -107,19 +113,25 @@ namespace SugarNode.Editor
         }
         private void SetColor()
         {
-            var root = this.Q("BackGround");
+            var body = this.Q("NodeBody");
             var title = this.Q("title-label");
             var color = NodeAttributeHandler.Instance.GetNodeColor(node.GetType());
-            var bgColor = color * 0.2f;
-            bgColor.a = 1;
-            var titleColor = color * 0.5f;
-            titleColor.a = 1;
-            root.style.borderTopColor = titleColor;
-            root.style.borderBottomColor = titleColor;
-            root.style.borderLeftColor = titleColor;
-            root.style.borderRightColor = titleColor;
+
+            var color_1 = color * 0.2f;
+            color_1.a = 1;
+            var bgColor = new StyleColor(color_1);
+
+            var color_2 = color * 0.5f;
+            color_2.a = 1;
+            var titleColor = new StyleColor(color_2);
+
+
+            body.style.borderTopColor = titleColor;
+            body.style.borderBottomColor = titleColor;
+            body.style.borderLeftColor = titleColor;
+            body.style.borderRightColor = titleColor;
             title.style.backgroundColor = titleColor;
-            root.style.backgroundColor = bgColor;
+            body.style.backgroundColor = bgColor;
         }
     }
 }

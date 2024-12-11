@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: bf92b0598f0027e44a5e5e1abff15cd7
-  gridPos: {x: 397, y: 149}
+  gridPos: {x: 424, y: 151}
   num: 123
   test_Tips: "\u65E5\u5948"
   input:
@@ -71,7 +71,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: d33de22171a58f8469d0514e8683a74a
-  gridPos: {x: 405, y: 432}
+  gridPos: {x: 457.7501, y: 415.30002}
   num: 123
   test_Tips: "\u65E5\u5948"
   input:
@@ -111,7 +111,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_graph: {fileID: 11400000}
   guid: 9ed21be20229d4e4c88aa1815952698e
-  gridPos: {x: 210.27748, y: 179.86}
+  gridPos: {x: 130, y: 143}
   str: Hello World!
   input:
     m_guid: 9815c9114c925874899d4a347841f866

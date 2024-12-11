@@ -1,4 +1,4 @@
-#BackGround {
+#NodeBody {
     flex-grow: 1;
     border-left-color: rgb(128, 128, 128);
     border-right-color: rgb(128, 128, 128);
@@ -31,18 +31,29 @@
     -unity-text-align: middle-center;
 }
 
+#BackGround {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+}
+
 :hover > #BackGround {
-    border-left-color: rgba(204, 204, 204, 255);
-    border-right-color: rgba(204, 204, 204, 255);
-    border-top-color: rgba(204, 204, 204, 255);
-    border-bottom-color: rgba(204, 204, 204, 255);
+    border-left-color: rgb(153, 153, 153);
+    border-right-color: rgb(153, 153, 153);
+    border-top-color: rgb(153, 153, 153);
+    border-bottom-color: rgb(153, 153, 153);
 }
 
 :selected > #BackGround {
-    border-left-color: rgba(255, 255, 255, 255);
-    border-right-color: rgba(255, 255, 255, 255);
-    border-top-color: rgba(255, 255, 255, 255);
-    border-bottom-color: rgba(255, 255, 255, 255);
+    border-left-color: rgb(204, 204, 204);
+    border-right-color: rgb(204, 204, 204);
+    border-top-color: rgb(204, 204, 204);
+    border-bottom-color: rgb(204, 204, 204);
 }
 
 :hover:selected > #BackGround {
@@ -50,8 +61,4 @@
     border-right-color: rgb(255, 255, 255);
     border-top-color: rgb(255, 255, 255);
     border-bottom-color: rgb(255, 255, 255);
-    border-left-width: 3px;
-    border-right-width: 3px;
-    border-top-width: 3px;
-    border-bottom-width: 3px;
 }

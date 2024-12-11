@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 using System.Linq;
 using PortElement = UnityEditor.Experimental.GraphView.Port;
+using System;
 
 namespace SugarNode.Editor
 {
@@ -52,7 +53,7 @@ namespace SugarNode.Editor
             return graphViewChange;
         }
 
-        // 右键创建节点
+        // 右键创建节点，或者创建节点图
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
             if (NodeEditorWindow.activeGraph)
@@ -66,7 +67,16 @@ namespace SugarNode.Editor
                 }
                 BuildOtherMenu(evt);
             }
-            else Debug.Log("请先选择激活一个Graph对象");
+            else
+            {
+                var allGraphWhichCanInstantiate = NodeAttributeHandler.Instance.GetAllGraphType();
+                foreach (var graphType in allGraphWhichCanInstantiate)
+                {
+                    var attribute = NodeAttributeHandler.Instance.GetGraphCreateMenu(graphType);
+                    evt.menu.AppendAction(attribute.menuName,
+                        _ => CreateGraph(graphType, attribute.fileName));
+                }
+            }
         }
         private void BuildOtherMenu(ContextualMenuPopulateEvent evt)
         {
@@ -83,7 +93,7 @@ namespace SugarNode.Editor
             }
             return base.DeleteSelection();
         }
-        void CreateNode(System.Type type, Vector2 mousePositionInGridSpace)
+        void CreateNode(Type type, Vector2 mousePositionInGridSpace)
         {
             if (NodeEditorWindow.activeGraph)
             {
@@ -96,6 +106,33 @@ namespace SugarNode.Editor
                 AddElement(new NodeElement(node));
             }
             else Debug.Log("请先选择激活一个Graph对象");
+        }
+        void CreateGraph(Type type, string fileName)
+        {
+            //获取当前Project窗口选中的一个文件夹
+            string GetSelectObjectFolder()
+            {
+                var activeObject = Selection.activeObject;
+                if (activeObject != null)
+                {
+                    string activePath = AssetDatabase.GetAssetPath(activeObject);
+                    if (System.IO.Directory.Exists(activePath))
+                        return activePath;
+                    else // 如果选中的对象不是一个文件夹，找到其所在的文件夹
+                        return System.IO.Path.GetDirectoryName(activePath);
+                }
+                else return "Assets";
+            }
+            // ProjectWindowUtil.CreateAsset(graph, $"Assets/{fileName}.asset");//这个是直接创建物体，不会挂起线程
+            string path = EditorUtility.SaveFilePanel($"保存{fileName}", GetSelectObjectFolder(), $"{fileName}", "asset");//这个玩意儿会把进程暂停在这句
+            if (string.IsNullOrEmpty(path))
+                return;
+            path = FileUtil.GetProjectRelativePath(path);
+            var graph = ScriptableObject.CreateInstance(type);
+            AssetDatabase.CreateAsset(graph, path);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            NodeEditorWindow.Instance.TrySwitchGraphAndRepaint(graph as Graph);
         }
         void DeleteNode(Node node)
         {

@@ -15,6 +15,8 @@ namespace SugarNode.Editor
         private Dictionary<Type, float> nodeWidthAttributes = new Dictionary<Type, float>();
         private Dictionary<Type, Color> nodeColorAttributes = new Dictionary<Type, Color>();
         private Dictionary<Type, HashSet<Type>> graphAllowNodesAttributes = new Dictionary<Type, HashSet<Type>>();
+        private HashSet<Type> allAllowGraphs;
+        private Dictionary<Type, CreateAssetMenuAttribute> graphCreateMenu = new Dictionary<Type, CreateAssetMenuAttribute>();
         private Dictionary<Type, List<(Type, uint)>> graphRequiredNodesAttributes = new Dictionary<Type, List<(Type, uint)>>();
         /// <summary> 通过CreateMenuAttribute获取右键创建的菜单路径 </summary>
         internal string GetNodeCreateMenu(Type nodeType)
@@ -27,7 +29,6 @@ namespace SugarNode.Editor
                 createMenuAttributes.Add(nodeType, attribute?.menuPath ?? nodeType.Name);
                 return createMenuAttributes[nodeType];
             }
-
         }
         /// <summary> 通过NodeTitleAttribute获取节点标题文字 </summary>
         internal string GetNodeDefaultName(Type nodeType)
@@ -94,6 +95,38 @@ namespace SugarNode.Editor
                     graphAllowNodesAttributes.Add(graphType, allowTypes);
                 }
                 return graphAllowNodesAttributes[graphType];
+            }
+        }
+        internal IEnumerable<Type> GetAllGraphType()
+        {
+            if (allAllowGraphs == null)
+            {
+                allAllowGraphs = new HashSet<Type>();
+                var allChildTypes = TypeCache.GetTypesDerivedFrom(typeof(Graph));
+                var allowTypes = allChildTypes.Where(type => !type.IsAbstract).ToHashSet();
+                allAllowGraphs.UnionWith(allowTypes);
+            }
+            return allAllowGraphs;
+        }
+        internal CreateAssetMenuAttribute GetGraphCreateMenu(Type graphType)
+        {
+            if (graphCreateMenu.TryGetValue(graphType, out var ret))
+                return ret;
+            else
+            {
+                var attribute = graphType.GetCustomAttribute<CreateAssetMenuAttribute>();
+                if (attribute != null)
+                    graphCreateMenu.Add(graphType, attribute);
+                else
+                {
+                    graphCreateMenu.Add(graphType, new CreateAssetMenuAttribute()
+                    {
+                        menuName = graphType.FullName,
+                        fileName = graphType.Name,
+                        order = 0
+                    });
+                }
+                return graphCreateMenu[graphType];
             }
         }
         /// <summary> 通过RequiredNodeAttribute获取Graph里必须存在哪些节点 </summary>
