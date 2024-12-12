@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bac2d157018c72f40b3a646db1ddae0c, type: 3}
+  m_Name: 3144
+  m_EditorClassIdentifier: 
+  nodes:
+  - {fileID: 3756987364533873778}
+--- !u!114 &3756987364533873778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 736669941ee16c04d8980f9e53c146be, type: 3}
+  m_Name: "2\u53F7\u5BF9\u8BDD\u8282\u70B9"
+  m_EditorClassIdentifier: 
+  m_graph: {fileID: 11400000}
+  guid: d3dee881c8a0de54182ed58e7e3f8806
+  gridPos: {x: 330, y: 436}
+  num: 123
+  test_Tips: "\u65E5\u5948"
+  input:
+    m_guid: 141cfd16bc05d904d8e30d6f65ada046
+    portName: Input
+    m_maxConnectionCount: -1
+    defaultValue: 0
+  defaultOutput:
+    m_guid: 63a5ec4034520c4489b291654c00b8b8
+    portName: "\u9ED8\u8BA4\u5206\u652F"
+    m_maxConnectionCount: -1
+    m_connectionsGUID: []
+  output1:
+    m_guid: 87fd805b4f7ed2941a77ea5708ef8db8
+    portName: "1\u53F7\u5206\u652F"
+    m_maxConnectionCount: -1
+    m_connectionsGUID: []
+    defaultValue: 
+  output2:
+    m_guid: 61119af80d39fc144b4d31fc3f86759d
+    portName: "2\u53F7\u5206\u652F"
+    m_maxConnectionCount: -1
+    m_connectionsGUID: []
+    defaultValue: 

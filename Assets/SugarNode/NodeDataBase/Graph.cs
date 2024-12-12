@@ -160,7 +160,24 @@ namespace SugarNode
                 m_allInputPortCache.AddOrSetValue(input.guid, input);
             foreach (var output in node.Outputs)
                 m_allOutputPortCache.AddOrSetValue(output.guid, output);
-                // BuildRuntimeConnection(output);//新创建的节点，其所有连接一定是空的，就不用创建Port之间的互相连接了
+            // BuildRuntimeConnection(output);//新创建的节点，其所有连接一定是空的，就不用创建Port之间的互相连接了
+        }
+        private void RemoveEditorRuntimeConnections(Node node)
+        {
+            //清除Port与Port的连接、Graph与Port的连接
+            foreach (var input in node.Inputs)
+            {
+                (input as ICanBulidConnectionCache).DisposeCache();
+                m_allInputPortCache.Remove(input.guid);
+            }
+            foreach (var output in node.Outputs)
+            {
+                (output as ICanBulidConnectionCache).DisposeCache();
+                m_allOutputPortCache.Remove(output.guid);
+            }
+            //清除Node与Port的连接
+            ICanBulidConnectionCache nodeInitializer = node;
+            nodeInitializer.DisposeCache();
         }
         public void AddNode(Node node)
         {
@@ -175,6 +192,28 @@ namespace SugarNode
         {
             if (nodes.Remove(node))
             {
+                //删除自身所有端口的连接
+                /*
+                //这样遍历会对原始的遍历集合node.Outputs进行删除，会报错
+                foreach (var output in node.Outputs)
+                    foreach (var input in output.Connections)
+                        DisConnectPort(output, input);
+                foreach (var input in node.Inputs)
+                    foreach (var output in input.Connections)
+                        DisConnectPort(output, input); */
+
+                //只需单向删除其他Node对自己的所有引用。自己对其他Node的引用会被删除节点的行为清除掉
+                foreach (var output in node.Outputs)
+                    foreach (var input in output.Connections)
+                        input.m_connections.Remove(output);
+                foreach (var input in node.Inputs)
+                    foreach (var output in input.Connections)
+                    {
+                        output.m_connections.Remove(input);
+                        output.m_connectionsGUID.Remove(input.guid);
+                    }
+                RemoveEditorRuntimeConnections(node);
+
                 AssetDatabase.RemoveObjectFromAsset(node);
                 AssetDatabase.SaveAssets();
                 return true;
