@@ -12,7 +12,6 @@ namespace SugarNode.Editor
         internal static NodeEditorWindow Instance { get { if (!m_instance) { m_instance = GetWindow<NodeEditorWindow>(); m_instance.titleContent.text = nameof(SugarNode); } return m_instance; } }
         internal static Graph activeGraph;
         internal NodeGridElement nodeGridElement;
-        internal NodeInspectorElement inspector;
         [MenuItem("Window/SugarNodeEditor")]
         public static void OpenWindow() => Instance.Show();
         public void CreateGUI()
@@ -24,8 +23,6 @@ namespace SugarNode.Editor
             rootVisualElement.styleSheets.Add(styleSheet);
 
             nodeGridElement = rootVisualElement.Q<NodeGridElement>();//有点像GetComponentInChild()
-            inspector = rootVisualElement.Q<NodeInspectorElement>();
-            NodeElement.OnNodeSelected += inspector.UpdateSelection;
             nodeGridElement.graphViewChanged += NodeGridElement.OnGraphViewChanged;
         }
         private void OnFocus()
@@ -42,7 +39,6 @@ namespace SugarNode.Editor
         }
         private void OnDestroy()
         {
-            NodeElement.OnNodeSelected -= inspector.UpdateSelection;
             nodeGridElement.graphViewChanged -= NodeGridElement.OnGraphViewChanged;
 
             m_instance = null;

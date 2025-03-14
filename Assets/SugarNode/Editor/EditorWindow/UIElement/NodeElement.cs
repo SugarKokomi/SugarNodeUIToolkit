@@ -5,16 +5,23 @@ using UnityEngine;
 using PortElement = UnityEditor.Experimental.GraphView.Port;
 using UnityEditor;
 using UnityEngine.UIElements;
-using System.Linq;
+using UnityEditor.UIElements;
+using System.Reflection;
+
+
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector.Editor;
+#endif
 
 namespace SugarNode.Editor
 {
     public class NodeElement : UnityEditor.Experimental.GraphView.Node
     {
-        public static Action<NodeElement> OnNodeSelected;
+        // public static Action<NodeElement> OnNodeSelected;
         internal Node node;
         internal Dictionary<PortElement, string> uiPairsPort;
         internal static Dictionary<string, PortElement> uiPairsPortReverse;//前者的反向字典
+        VisualElement content;
         // StyleSheet styleSheet;
         public NodeElement(Node node) :
             base(NodeEditorUtility.Instance.GetSugarNodeRootFolder() +
@@ -30,46 +37,13 @@ namespace SugarNode.Editor
             uiPairsPort = new Dictionary<PortElement, string>();
             uiPairsPortReverse ??= new Dictionary<string, PortElement>();
 
-            InitPort();
+            // InitPort();
             SetTipsText();
             SetWidth();
             SetColor();
 
-            /* styleSheet = Resources.Load<StyleSheet>("NodeElement_StyleSheet");
-            styleSheets.Add(styleSheet); */
-        }
-        private void InitPort()
-        {
-            foreach (var inputPort in node.Inputs)
-            {
-                var portUI = base.InstantiatePort(
-                    Orientation.Horizontal,
-                    Direction.Input,
-                    PortElement.Capacity.Multi,
-                    GetPortType(inputPort)
-                );
-                portUI.portName = inputPort.PortName;
-                uiPairsPort.Add(portUI, inputPort.guid);
-                if (uiPairsPortReverse.ContainsKey(inputPort.guid))
-                    uiPairsPortReverse[inputPort.guid] = portUI;
-                else uiPairsPortReverse.Add(inputPort.guid, portUI);
-                inputContainer.Add(portUI);
-            }
-            foreach (var outputPort in node.Outputs)
-            {
-                var portUI = base.InstantiatePort(
-                    Orientation.Horizontal,
-                    Direction.Output,
-                    PortElement.Capacity.Multi,
-                    GetPortType(outputPort)
-                );
-                portUI.portName = outputPort.PortName;
-                uiPairsPort.Add(portUI, outputPort.guid);
-                if (uiPairsPortReverse.ContainsKey(outputPort.guid))
-                    uiPairsPortReverse[outputPort.guid] = portUI;
-                else uiPairsPortReverse.Add(outputPort.guid, portUI);
-                outputContainer.Add(portUI);
-            }
+            content = this.Q("Contents");
+            DrawFullGUI();
         }
         private static Type GetPortType(Port port)
         {
@@ -96,10 +70,35 @@ namespace SugarNode.Editor
         public override void OnSelected()
         {
             base.OnSelected();
-            OnNodeSelected?.Invoke(this);
+            // OnNodeSelected?.Invoke(this);
             // NodeEditorWindow.Instance.SetSelectionNoEvent(this.node);
             Selection.activeObject = node;
+            // ShowGUI();
         }
+        public override void OnUnselected()
+        {
+            base.OnUnselected();
+            // HideGUI();
+
+            // 定义一个泛型类
+            /* Type genericType = typeof(InputPort<>);
+            Debug.Log($"IsGenericType: {genericType.IsGenericType}"); // true
+            Debug.Log($"IsGenericTypeDefinition: {genericType.IsGenericTypeDefinition}"); // true
+            Debug.Log($"IsClass: {genericType.IsClass}"); // true
+
+            // 定义一个泛型实例
+            Type genericInstance = typeof(InputPort<int>);
+            Debug.Log($"IsGenericType: {genericInstance.IsGenericType}"); // true
+            Debug.Log($"IsGenericTypeDefinition: {genericInstance.IsGenericTypeDefinition}"); // false
+            Debug.Log($"IsClass: {genericInstance.IsClass}"); // true
+
+            // 非泛型类
+            Type nonGenericType = typeof(string);
+            Debug.Log($"IsGenericType: {nonGenericType.IsGenericType}"); // false
+            Debug.Log($"IsClass: {nonGenericType.IsClass}"); // true */
+
+        }
+
         private void SetTipsText()
         {
             var titleTips = this.Q<Label>("title-Tips");
@@ -107,9 +106,9 @@ namespace SugarNode.Editor
         }
         private void SetWidth()
         {
-            var root = this.Q("BackGround");
+            /* var root = this.Q("BackGround");
             float minWidth = NodeAttributeHandler.Instance.GetNodeWidth(node.GetType());
-            root.style.minWidth = minWidth > 0 ? minWidth : StyleKeyword.Auto;
+            root.style.minWidth = minWidth > 0 ? minWidth : StyleKeyword.Auto; */
         }
         private void SetColor()
         {
@@ -132,6 +131,107 @@ namespace SugarNode.Editor
             body.style.borderRightColor = titleColor;
             title.style.backgroundColor = titleColor;
             body.style.backgroundColor = bgColor;
+        }
+        UnityEditor.Editor editor;
+        IMGUIContainer imGUI;
+        private void DrawFullGUI()
+        {
+            void DrawNodeInspector()
+            {
+#if ODIN_INSPECTOR
+                if (!editor)
+                    editor = OdinEditor.CreateEditor(node);
+#else
+            if (!editor)
+                editor = UnityEditor.Editor.CreateEditor(node);
+#endif
+                editor.OnInspectorGUI();
+            }
+            // imGUI = new IMGUIContainer(DrawNodeInspector);
+            // content.Add(imGUI);
+            content.Add(DrawPortWithVisualElement());
+            content.style.display = DisplayStyle.Flex;
+            inputContainer.style.display = DisplayStyle.None;
+            outputContainer.style.display = DisplayStyle.None;
+            // DrawPortWithVisualElement();
+        }
+        private void HideGUI()
+        {
+            // content.Remove(imGUI);
+            // imGUI = null;
+            // UnityEngine.Object.DestroyImmediate(editor);
+            content.Clear();
+            content.style.display = DisplayStyle.None;
+            // inputContainer.style.display = DisplayStyle.Flex;
+            // outputContainer.style.display = DisplayStyle.Flex;
+
+        }
+
+        SerializedObject serializedObject;
+        private VisualElement DrawPortWithVisualElement()
+        {
+            var visualElement = new VisualElement();
+            visualElement.style.flexDirection = FlexDirection.Column;
+            serializedObject = new SerializedObject(node);
+            var serializedProperty = serializedObject.GetIterator();
+            while (true)
+            {
+                bool next;
+                if (serializedProperty.name == "m_Script")//跳过脚本自己的序列化
+                {
+                    serializedProperty.NextVisible(true);
+                    continue;
+                }
+                var propertyType = serializedProperty.serializedObject.targetObject.GetType()
+                    .GetField(serializedProperty.name,
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.Instance)
+                    ?.FieldType;
+
+                // 检查字段是否带有 CustomPortDrawerAttribute 属性
+                bool isCustomPort = false, isCustomPortList = false;
+                if (propertyType != null)
+                {
+                    isCustomPort = typeof(Port).IsAssignableFrom(propertyType);
+                    isCustomPortList =
+                        (propertyType.IsArray && typeof(Port).IsAssignableFrom(propertyType.GetElementType())) ||//是不是Port[]
+                        (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>) &&//是不是List<>
+                            typeof(Port).IsAssignableFrom(propertyType.GetGenericArguments()[0]));//是不是List<T>
+                }
+
+                if (isCustomPort)
+                {
+                    visualElement.Add(DrawPort(serializedProperty));
+                    next = serializedProperty.NextVisible(false);
+                }
+                else if(isCustomPortList)
+                {
+                    
+                    var field = new PropertyField(serializedProperty);
+                    field.BindProperty(serializedProperty);
+                    visualElement.Add(field);
+                    next = serializedProperty.NextVisible(false);
+                }
+                else
+                {
+                    var field = new PropertyField(serializedProperty);
+                    field.BindProperty(serializedProperty);
+                    field.style.paddingLeft = 30;
+                    field.style.paddingRight = 30;
+                    visualElement.Add(field);
+                    next = serializedProperty.NextVisible(true);
+                }
+                if (!next) break;
+            }
+            MarkDirtyRepaint();
+            return visualElement;
+        }
+        private VisualElement DrawPort(SerializedProperty serializedProperty)
+        {
+            var field = new PropertyField(serializedProperty);
+            field.BindProperty(serializedProperty);
+            return field;
         }
     }
 }
