@@ -78,24 +78,6 @@ namespace SugarNode.Editor
         public override void OnUnselected()
         {
             base.OnUnselected();
-            // HideGUI();
-
-            // 定义一个泛型类
-            /* Type genericType = typeof(InputPort<>);
-            Debug.Log($"IsGenericType: {genericType.IsGenericType}"); // true
-            Debug.Log($"IsGenericTypeDefinition: {genericType.IsGenericTypeDefinition}"); // true
-            Debug.Log($"IsClass: {genericType.IsClass}"); // true
-
-            // 定义一个泛型实例
-            Type genericInstance = typeof(InputPort<int>);
-            Debug.Log($"IsGenericType: {genericInstance.IsGenericType}"); // true
-            Debug.Log($"IsGenericTypeDefinition: {genericInstance.IsGenericTypeDefinition}"); // false
-            Debug.Log($"IsClass: {genericInstance.IsClass}"); // true
-
-            // 非泛型类
-            Type nonGenericType = typeof(string);
-            Debug.Log($"IsGenericType: {nonGenericType.IsGenericType}"); // false
-            Debug.Log($"IsClass: {nonGenericType.IsClass}"); // true */
 
         }
 
@@ -106,9 +88,9 @@ namespace SugarNode.Editor
         }
         private void SetWidth()
         {
-            /* var root = this.Q("BackGround");
+            var root = this.Q("BackGround");
             float minWidth = NodeAttributeHandler.Instance.GetNodeWidth(node.GetType());
-            root.style.minWidth = minWidth > 0 ? minWidth : StyleKeyword.Auto; */
+            root.style.minWidth = minWidth > 0 ? minWidth : StyleKeyword.None;
         }
         private void SetColor()
         {
@@ -136,7 +118,7 @@ namespace SugarNode.Editor
         IMGUIContainer imGUI;
         private void DrawFullGUI()
         {
-            void DrawNodeInspector()
+            /* void DrawNodeInspector()
             {
 #if ODIN_INSPECTOR
                 if (!editor)
@@ -146,7 +128,7 @@ namespace SugarNode.Editor
                 editor = UnityEditor.Editor.CreateEditor(node);
 #endif
                 editor.OnInspectorGUI();
-            }
+            } */
             // imGUI = new IMGUIContainer(DrawNodeInspector);
             // content.Add(imGUI);
             content.Add(DrawPortWithVisualElement());
@@ -174,6 +156,7 @@ namespace SugarNode.Editor
             visualElement.style.flexDirection = FlexDirection.Column;
             serializedObject = new SerializedObject(node);
             var serializedProperty = serializedObject.GetIterator();
+            bool enterChild = true;
             while (true)
             {
                 bool next;
@@ -182,45 +165,37 @@ namespace SugarNode.Editor
                     serializedProperty.NextVisible(true);
                     continue;
                 }
-                var propertyType = serializedProperty.serializedObject.targetObject.GetType()
+                /* var propertyType = serializedProperty.serializedObject.targetObject.GetType()
                     .GetField(serializedProperty.name,
-                    System.Reflection.BindingFlags.NonPublic |
-                    System.Reflection.BindingFlags.Public |
-                    System.Reflection.BindingFlags.Instance)
+                    BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
                     ?.FieldType;
 
-                // 检查字段是否带有 CustomPortDrawerAttribute 属性
-                bool isCustomPort = false, isCustomPortList = false;
-                if (propertyType != null)
-                {
-                    isCustomPort = typeof(Port).IsAssignableFrom(propertyType);
-                    isCustomPortList =
-                        (propertyType.IsArray && typeof(Port).IsAssignableFrom(propertyType.GetElementType())) ||//是不是Port[]
-                        (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>) &&//是不是List<>
-                            typeof(Port).IsAssignableFrom(propertyType.GetGenericArguments()[0]));//是不是List<T>
-                }
-
-                if (isCustomPort)
+                bool isPort = propertyType != null && typeof(Port).IsAssignableFrom(propertyType);
+                bool isPortList = propertyType != null && IsBaseClassOfGeneric(propertyType, typeof(ListPort<>));
+                if (isPort || isPortList)
                 {
                     visualElement.Add(DrawPort(serializedProperty));
-                    next = serializedProperty.NextVisible(false);
-                }
-                else if(isCustomPortList)
-                {
-                    
-                    var field = new PropertyField(serializedProperty);
-                    field.BindProperty(serializedProperty);
-                    visualElement.Add(field);
                     next = serializedProperty.NextVisible(false);
                 }
                 else
                 {
                     var field = new PropertyField(serializedProperty);
                     field.BindProperty(serializedProperty);
-                    field.style.paddingLeft = 30;
-                    field.style.paddingRight = 30;
+                    field.style.flexGrow = 0;
+                    field.style.flexShrink = 1;
+                    field.style.paddingLeft = 18;
+                    field.style.paddingRight = 18;
                     visualElement.Add(field);
-                    next = serializedProperty.NextVisible(true);
+                    next = serializedProperty.NextVisible(enterChild);
+                    enterChild = false;
+                } */
+
+                {
+                    var field = new PropertyField(serializedProperty);
+                    field.BindProperty(serializedProperty);
+                    visualElement.Add(field);
+                    next = serializedProperty.NextVisible(enterChild);
+                    enterChild = false;
                 }
                 if (!next) break;
             }
@@ -232,6 +207,24 @@ namespace SugarNode.Editor
             var field = new PropertyField(serializedProperty);
             field.BindProperty(serializedProperty);
             return field;
+        }
+        static bool IsBaseClassOfGeneric(Type derivedType, Type baseGenericType)
+        {
+            if (!baseGenericType.IsGenericTypeDefinition)
+            {
+                throw new ArgumentException("baseGenericType 必须是泛型类型的定义。");
+            }
+
+            Type baseType = baseGenericType.GetGenericTypeDefinition();
+            //往derivedType的基类遍历，判断derivedType是不是baseGenericType的子类
+            while (derivedType != null)
+            {
+                if (derivedType.IsGenericType && derivedType.GetGenericTypeDefinition() == baseType)
+                    return true;
+                derivedType = derivedType.BaseType;
+            }
+
+            return false;
         }
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 using System;
 using System.Linq;
 
@@ -11,15 +12,7 @@ namespace SugarNode
     //Port无法自己建立缓存，其连接网络需要Graph拿到全部Node才能帮忙构建。但是它可以自己清除自己的缓存
     {
         public enum PortDirection { Input, Output }
-        protected Port(string portName)
-        {
-            this.portName = portName;
-            CanConnected = DefaultConnectCondition;
-            if (string.IsNullOrEmpty(m_guid))//若guid为null，说明该Port是new出来的。若不为null，说明是Unity序列化出来的
-            {
-                m_guid = UnityEditor.GUID.Generate().ToString();
-            }
-        }
+        protected Port() { }
         protected abstract PortDirection Direction { get; }
 
         [SerializeField, HideInInspector]
@@ -45,8 +38,15 @@ namespace SugarNode
         public Node Node => m_node;
 
         protected bool hadInitSelf = false;
-        public Func<Port, bool> CanConnected;
-        public bool DefaultConnectCondition(Port other)
+        public void TryAssignGUID()
+        {
+            if (string.IsNullOrEmpty(m_guid))
+            {
+                // m_guid = UnityEditor.GUID.Generate().ToString();
+            }
+        }
+
+        public virtual bool CanConnectTo(Port other)
         {
             return other.Node != this.Node && other.Direction != this.Direction;
         }
@@ -62,11 +62,11 @@ namespace SugarNode
 
         }
     }
-    [/* HideInInspector, */ Serializable]
-    public class InputPort : Port, ICanBulidConnectionCache
+    [HideInInspector, Serializable]
+    public class InputPort : Port//, ICanBulidConnectionCache
     {
         protected sealed override PortDirection Direction => PortDirection.Input;
-        public InputPort(string portName) : base(portName)
+        public InputPort() : base()
         {
         }
         /// <summary> 用于运行时和开发时构建，快速存取读取 </summary>
@@ -75,7 +75,7 @@ namespace SugarNode
         public IEnumerable<OutputPort> Connections => m_connections;
         public OutputPort Connection => m_connections.FirstOrDefault();
 
-        void ICanBulidConnectionCache.InitCache()
+        /* void ICanBulidConnectionCache.InitCache()
         {
             if (hadInitSelf) return;
             hadInitSelf = true;
@@ -88,7 +88,7 @@ namespace SugarNode
             m_node = null;
             m_connections.Clear();
             m_connections = null;
-        }
+        } */
         public override object GetValue()
         {
             //InputPort取值规则：若自身无连接，使用默认值。若有连接，问OutputPort要值
@@ -99,10 +99,10 @@ namespace SugarNode
         }
     }
     [/* HideInInspector, */ Serializable]
-    public class OutputPort : Port, ICanBulidConnectionCache
+    public class OutputPort : Port//, ICanBulidConnectionCache
     {
         protected sealed override PortDirection Direction => PortDirection.Output;
-        public OutputPort(string portName) : base(portName)
+        public OutputPort() : base()
         {
         }
         /// <summary> 用于运行时和开发时构建，快速存取读取 </summary>
@@ -116,7 +116,7 @@ namespace SugarNode
 
         public IEnumerable<string> connectionsGUID => m_connectionsGUID;
 
-        void ICanBulidConnectionCache.InitCache()
+        /* void ICanBulidConnectionCache.InitCache()
         {
             if (hadInitSelf) return;
             hadInitSelf = true;
@@ -129,7 +129,7 @@ namespace SugarNode
             m_node = null;
             m_connections.Clear();
             m_connections = null;
-        }
+        } */
         public override object GetValue()
         {
             //OutputPort取值规则：若自身无连接，使用默认值。若有连接，问Node要值
@@ -143,8 +143,8 @@ namespace SugarNode
     public class InputPort<T> : InputPort
     {
         public T defaultValue;
-
-        public InputPort(T defaultValue = default, string portName = "") : base(portName)
+        public InputPort() : base() { }
+        public InputPort(T defaultValue = default) : base()
         {
             this.defaultValue = defaultValue;
         }
@@ -161,13 +161,17 @@ namespace SugarNode
         {
             return (T)inputPort.GetValue();
         }
+        /* public static implicit operator InputPort<T>(T value)
+        {
+            return new InputPort<T>(value);
+        } */
     }
     [Serializable]
     public class OutputPort<T> : OutputPort
     {
         public T defaultValue;
-        public OutputPort(T defaultValue = default, string portName = "") :
-            base(portName)
+        public OutputPort() : base() { }
+        public OutputPort(T defaultValue = default) : base()
         {
             this.defaultValue = defaultValue;
         }
@@ -175,9 +179,36 @@ namespace SugarNode
         {
             return base.GetValue() ?? default(T);
         }
-        public static implicit operator T(OutputPort<T> outputPort)
+        /* public static implicit operator T(OutputPort<T> outputPort)
         {
             return (T)outputPort.GetValue();
+        } */
+    }
+    /// <summary>
+    /// 可序列化List<Port>类的封装
+    /// Unity无法正常序列化List<T>的子类，且无法自定义List的PropertyDrawer，因此需自定义一个List<Port>容器
+    /// 用户并非需要一个List<Port>，而是只需要一个会动态变化数量的Port容器
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [Serializable]
+    public sealed class ListPort<T> : IEnumerable<T> where T : Port, new()
+    {
+        [SerializeField, HideInInspector]
+        private List<T> _serializedList = new List<T>();
+        public T this[int index] { get => _serializedList[index]; internal set => _serializedList[index] = value; }
+        public void Add(T port)
+        {
+            port.TryAssignGUID();
+            _serializedList.Add(port);
         }
+        public void Remove(T port)
+        {
+            if (_serializedList.Remove(port))
+            {
+                Debug.Log("端口被移除");
+            }
+        }
+        public IEnumerator<T> GetEnumerator() => _serializedList.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

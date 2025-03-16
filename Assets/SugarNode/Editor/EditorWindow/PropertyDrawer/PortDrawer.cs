@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace SugarNode.Editor
 {
-    public abstract class PortDrawer : PropertyDrawer
+    internal abstract class PortDrawer : PropertyDrawer
     {
         protected Type portValueType;
         protected bool foldout = false;
@@ -42,47 +42,28 @@ namespace SugarNode.Editor
         }
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            // 使用字段的显示名称或者实例名称作为PortName
-            /* string portName = property.FindPropertyRelative("portName").stringValue;
-            portName = string.IsNullOrEmpty(portName) ? property.displayName : portName;
-            var valueProperty = property.FindPropertyRelative("defaultValue");
-            var guid = property.FindPropertyRelative("m_guid").stringValue;
-
-            if (valueProperty != null)
-            {
-                EditorGUI.BeginProperty(position, new GUIContent(portName), property);
-                foldout = EditorGUI.Foldout(position, foldout, $"{portName} GUID:{guid}");
-                if (foldout)
-                {
-                    EditorGUI.PropertyField(position, valueProperty, GUIContent.none, true);
-                }
-                EditorGUI.EndProperty();
-            }
-            else EditorGUI.PropertyField(position, property, new GUIContent(portName), true); */
+            // EditorGUI.PropertyField(position, property, label, true);
         }
         /* public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            return property.CountInProperty() * 20;
+            float defaultHeight = base.GetPropertyHeight(property, label);
+            return property.CountInProperty() * defaultHeight;//无法正确处理[Space]和[Multiline]的高度
         } */
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => 0;
         public abstract override VisualElement CreatePropertyGUI(SerializedProperty property);
-        protected Label CreatePropertyName(SerializedProperty property)
+        protected string GetPropertyDisplayName(SerializedProperty property)
         {
             string portName = property.FindPropertyRelative("portName").stringValue;
-            Label label = new Label(string.IsNullOrEmpty(portName) ? property.displayName : portName);
-            label.style.unityTextAlign = TextAnchor.MiddleCenter;
-            return label;
+            return string.IsNullOrEmpty(portName) ? property.displayName : portName;
         }
-        protected PropertyField CreatePropertyValue(SerializedProperty property)
+        protected VisualElement CreatePropertyValue(SerializedProperty property)
         {
-            var defaultValue = property.FindPropertyRelative("defaultValue");
-            if (defaultValue != null)
-            {
-                PropertyField propertyField = new PropertyField(defaultValue, string.Empty);
-                propertyField.BindProperty(defaultValue);
-                propertyField.style.flexGrow = 1;
-                return propertyField;
-            }
-            return null;
+                    // var outputPort = property.FindPropertyRelative("m_connectionsGUID");
+                    // if (outputPort != null && outputPort.arraySize > 0) return null;
+            PropertyField propertyField = new PropertyField(property);
+            propertyField.BindProperty(property);
+            // propertyField.style.flexGrow = 1;
+            return propertyField;
         }
         protected PortElement CreatePropertyPort(SerializedProperty property, Direction direction)
         {
@@ -93,34 +74,53 @@ namespace SugarNode.Editor
                 maxConnectionCount,
                 guid,
                 portValueType);
-            port.portName = string.Empty;
+            port.portName = GetPropertyDisplayName(property);
             return port;
+        }
+        protected static void SetBorder(VisualElement element, Color color, float width, float radius)
+        {
+            element.style.borderTopLeftRadius = radius;
+            element.style.borderTopRightRadius = radius;
+            element.style.borderBottomLeftRadius = radius;
+            element.style.borderBottomRightRadius = radius;
+
+            element.style.borderTopWidth = width;
+            element.style.borderBottomWidth = width;
+            element.style.borderLeftWidth = width;
+            element.style.borderRightWidth = width;
+
+            element.style.borderTopColor = color;
+            element.style.borderBottomColor = color;
+            element.style.borderLeftColor = color;
+            element.style.borderRightColor = color;
         }
     }
     [CustomPropertyDrawer(typeof(InputPort), true)]
-    public class InputPortDrawer : PortDrawer
+    internal class InputPortDrawer : PortDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             portValueType = GetPortValueType();
             var container = new VisualElement();
-            container.style.flexDirection = FlexDirection.Row;
+            // container.style.flexDirection = FlexDirection.Row;
             container.Add(CreatePropertyPort(property, Direction.Input));
-            container.Add(CreatePropertyName(property));
             container.Add(CreatePropertyValue(property));
+            SetBorder(container, new Color(0.5f, 0.5f, 0.5f), 1, 2);
             return container;
         }
     }
     [CustomPropertyDrawer(typeof(OutputPort), true)]
-    public class OutputPortDrawer : PortDrawer
+    internal class OutputPortDrawer : PortDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
+            Debug.Log(property.displayName);
             portValueType = GetPortValueType();
             var container = new VisualElement();
-            container.style.flexDirection = FlexDirection.RowReverse;//反向水平排列
+            // container.style.flexDirection = FlexDirection.RowReverse;//反向水平排列
             container.Add(CreatePropertyPort(property, Direction.Output));
-            container.Add(CreatePropertyName(property));
+            container.Add(CreatePropertyValue(property));
+            SetBorder(container, new Color(0.5f, 0.5f, 0.5f), 1, 2);
             return container;
         }
     }

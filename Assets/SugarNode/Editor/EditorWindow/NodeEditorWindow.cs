@@ -45,6 +45,7 @@ namespace SugarNode.Editor
             if (activeGraph)
             {
                 activeGraph.TryClearAllRuntimeCache();
+                AssetDatabase.SaveAssetIfDirty(activeGraph);
                 activeGraph = null;
             }
         }

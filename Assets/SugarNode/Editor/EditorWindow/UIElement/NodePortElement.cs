@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using PortElement = UnityEditor.Experimental.GraphView.Port;
 using System;
-using System.CodeDom;
 
 namespace SugarNode.Editor
 {
@@ -13,8 +12,6 @@ namespace SugarNode.Editor
     {
         protected static Type GetPortType(Type objectType)
         {
-            // Type objectType = fieldInfo.FieldType;
-            // 检查该类型是否是泛型类 Port<T> 的实例
             if (objectType.IsGenericType)
             {
                 Type tType = objectType.GetGenericTypeDefinition();
