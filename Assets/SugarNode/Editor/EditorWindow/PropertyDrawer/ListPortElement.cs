@@ -50,19 +50,16 @@ namespace SugarNode.Editor
             buttonGroup.Add(removeButton);
             container.Add(buttonGroup);
             return container;
-        }
+        }   
         private void UpdateListUI(VisualElement container, SerializedProperty list)
         {
             container.Clear(); // 清除现有元素
-
-            for (int i = 0; i < list.arraySize; i++)
+            foreach(SerializedProperty listItem in list)
             {
-                var listItem = list.GetArrayElementAtIndex(i);
                 PropertyField propertyField = new PropertyField(listItem);
-                propertyField.BindProperty(listItem);
-                propertyField.style.flexGrow = 1;
+                // propertyField.BindProperty(listItem);
                 container.Add(propertyField);
             }
         }
     }
-}
+}   

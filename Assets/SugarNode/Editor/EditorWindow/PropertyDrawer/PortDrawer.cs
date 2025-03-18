@@ -11,7 +11,6 @@ namespace SugarNode.Editor
 {
     internal abstract class PortDrawer : PropertyDrawer
     {
-        protected Type portValueType;
         protected bool foldout = false;
         /// <summary> 获取所附加的字段的输入值的泛型类型 </summary>
         protected Type GetPortValueType()
@@ -40,16 +39,25 @@ namespace SugarNode.Editor
                 return type.GetGenericArguments()[0];
             else return type;
         }
+        bool b;
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             // EditorGUI.PropertyField(position, property, label, true);
+            EditorGUI.BeginProperty(position, label, property);
+
+            // 绘制子属性
+            b = !EditorGUI.PropertyField(position, property, label, b);
+
+            // 其他自定义绘制逻辑
+
+            EditorGUI.EndProperty();
         }
-        /* public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             float defaultHeight = base.GetPropertyHeight(property, label);
             return property.CountInProperty() * defaultHeight;//无法正确处理[Space]和[Multiline]的高度
-        } */
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => 0;
+        }
+        // public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => 0;
         public abstract override VisualElement CreatePropertyGUI(SerializedProperty property);
         protected string GetPropertyDisplayName(SerializedProperty property)
         {
@@ -58,12 +66,14 @@ namespace SugarNode.Editor
         }
         protected VisualElement CreatePropertyValue(SerializedProperty property)
         {
-                    // var outputPort = property.FindPropertyRelative("m_connectionsGUID");
-                    // if (outputPort != null && outputPort.arraySize > 0) return null;
-            PropertyField propertyField = new PropertyField(property);
+
+            // var outputPort = property.FindPropertyRelative("m_connectionsGUID");
+            // if (outputPort != null && outputPort.arraySize > 0) return null;
+            /* PropertyField propertyField = new PropertyField(property);
+            Debug.Log(property.FindPropertyRelative("portName").stringValue);
             propertyField.BindProperty(property);
-            // propertyField.style.flexGrow = 1;
-            return propertyField;
+            return propertyField; */
+            return  new PropertyField(property);
         }
         protected PortElement CreatePropertyPort(SerializedProperty property, Direction direction)
         {
@@ -73,7 +83,7 @@ namespace SugarNode.Editor
                 direction,
                 maxConnectionCount,
                 guid,
-                portValueType);
+                GetPortValueType());
             port.portName = GetPropertyDisplayName(property);
             return port;
         }
@@ -100,12 +110,10 @@ namespace SugarNode.Editor
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            portValueType = GetPortValueType();
             var container = new VisualElement();
-            // container.style.flexDirection = FlexDirection.Row;
+            SetBorder(container, new Color(0.5f, 0.5f, 0.5f), 1, 2);
             container.Add(CreatePropertyPort(property, Direction.Input));
             container.Add(CreatePropertyValue(property));
-            SetBorder(container, new Color(0.5f, 0.5f, 0.5f), 1, 2);
             return container;
         }
     }
@@ -114,13 +122,10 @@ namespace SugarNode.Editor
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            Debug.Log(property.displayName);
-            portValueType = GetPortValueType();
             var container = new VisualElement();
-            // container.style.flexDirection = FlexDirection.RowReverse;//反向水平排列
+            SetBorder(container, new Color(0.5f, 0.5f, 0.5f), 1, 2);
             container.Add(CreatePropertyPort(property, Direction.Output));
             container.Add(CreatePropertyValue(property));
-            SetBorder(container, new Color(0.5f, 0.5f, 0.5f), 1, 2);
             return container;
         }
     }
