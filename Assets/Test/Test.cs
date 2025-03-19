@@ -2,10 +2,13 @@ using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
 using SugarNode;
+using System;
 
 public class Test : MonoBehaviour
 {
     public M_DialogueGraph m_DialogueGraph;
+    // public ListPort<OutputPort<int>> outputPorts;
+    public TestList<string> strings;
     void Start()
     {
         m_DialogueGraph.TryBuildAllRuntimeCache();
@@ -19,3 +22,5 @@ public class Test : MonoBehaviour
         Debug.Log(node1.GetValue(node2.DefaultInput.Connection));
     }
 }
+[Serializable]//
+public class TestList<T>:List<T>{}

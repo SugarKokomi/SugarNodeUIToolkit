@@ -1,5 +1,52 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-2617063229568485641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae21d560db8ff3a49becdda6ac85c90f, type: 3}
+  m_Name: "1\u53F7\u5BF9\u8BDD\u8282\u70B9"
+  m_EditorClassIdentifier: 
+  m_graph: {fileID: 11400000}
+  guid: 9842d48acaae0ce43927a4202103301f
+  gridPos: {x: 496, y: 352}
+  str: Hello World!
+  input:
+    m_guid: 9a88bbf34ea33334b884140ce821aa76
+    portName: 
+    m_maxConnectionCount: -1
+    m_node: {fileID: -2617063229568485641}
+    defaultValue: 
+  output:
+    m_guid: 87cb102e86a6aba4f9b1994d20dc6416
+    portName: 
+    m_maxConnectionCount: -1
+    m_node: {fileID: -2617063229568485641}
+    m_connectionsGUID: []
+    defaultValue: {x: 1, y: 2, z: 3}
+  input2:
+    m_guid: d2c5084c8a82fc24eb3eb8eb2b167c25
+    portName: 
+    m_maxConnectionCount: -1
+    m_node: {fileID: -2617063229568485641}
+    defaultValue:
+      INT: 123
+      FLOAT: 3.14
+      STRING: str
+      BOOLEAN: 1
+  listPortTest:
+    _serializedList:
+    - m_guid: 
+      portName: 
+      m_maxConnectionCount: 0
+      m_node: {fileID: 0}
+      m_connectionsGUID: []
+  sentence: 
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13,43 +60,4 @@ MonoBehaviour:
   m_Name: 3144
   m_EditorClassIdentifier: 
   nodes:
-  - {fileID: 3756987364533873778}
---- !u!114 &3756987364533873778
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 736669941ee16c04d8980f9e53c146be, type: 3}
-  m_Name: "2\u53F7\u5BF9\u8BDD\u8282\u70B9"
-  m_EditorClassIdentifier: 
-  m_graph: {fileID: 11400000}
-  guid: d3dee881c8a0de54182ed58e7e3f8806
-  gridPos: {x: 330, y: 436}
-  num: 123
-  test_Tips: "\u65E5\u5948"
-  input:
-    m_guid: 141cfd16bc05d904d8e30d6f65ada046
-    portName: Input
-    m_maxConnectionCount: -1
-    defaultValue: 0
-  defaultOutput:
-    m_guid: 63a5ec4034520c4489b291654c00b8b8
-    portName: "\u9ED8\u8BA4\u5206\u652F"
-    m_maxConnectionCount: -1
-    m_connectionsGUID: []
-  output1:
-    m_guid: 87fd805b4f7ed2941a77ea5708ef8db8
-    portName: "1\u53F7\u5206\u652F"
-    m_maxConnectionCount: -1
-    m_connectionsGUID: []
-    defaultValue: 
-  output2:
-    m_guid: 61119af80d39fc144b4d31fc3f86759d
-    portName: "2\u53F7\u5206\u652F"
-    m_maxConnectionCount: -1
-    m_connectionsGUID: []
-    defaultValue: 
+  - {fileID: -2617063229568485641}
