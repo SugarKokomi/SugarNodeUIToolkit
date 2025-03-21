@@ -73,12 +73,20 @@ namespace SugarNode.Editor
             Debug.Log(property.FindPropertyRelative("portName").stringValue);
             propertyField.BindProperty(property);
             return propertyField; */
-            return  new PropertyField(property);
+            return new PropertyField(property);
         }
         protected PortElement CreatePropertyPort(SerializedProperty property, Direction direction)
         {
             int maxConnectionCount = property.FindPropertyRelative("m_maxConnectionCount").intValue;
-            string guid = property.FindPropertyRelative("m_guid").stringValue;
+            var guidProperty = property.FindPropertyRelative("m_guid");
+            var guid = guidProperty.stringValue;
+            if (string.IsNullOrEmpty(guid))
+            {
+                guid = GUID.Generate().ToString();
+                Debug.Log($"生成GUID:{guid}");
+                guidProperty.stringValue = guid;
+                EditorUtility.SetDirty(property.serializedObject.targetObject);
+            }
             var port = NodePortElement.Create(
                 direction,
                 maxConnectionCount,

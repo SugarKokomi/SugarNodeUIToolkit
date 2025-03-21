@@ -29,7 +29,6 @@ namespace SugarNode.Editor
         {
             this.node = node;
             this.title = node.name;
-            this.viewDataKey = node.guid;
 
             style.left = node.gridPos.x;
             style.top = node.gridPos.y;

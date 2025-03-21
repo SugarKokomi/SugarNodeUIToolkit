@@ -15,51 +15,55 @@ namespace SugarNode.Editor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => 0;
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
+            var targetList = property.FindPropertyRelative("_serializedList");
+
             var container = new Foldout();
             container.text = property.displayName;
-            var listContainer = new VisualElement();
-            listContainer.style.flexDirection = FlexDirection.Column;
-            container.Add(listContainer);
-            var buttonGroup = new VisualElement();
-            buttonGroup.style.flexDirection = FlexDirection.Row;
-            container.Add(buttonGroup);
-
-            var list = property.FindPropertyRelative("_serializedList");
-            UpdateListUI(listContainer,list);
-
-            var addButton = new Button();
-            addButton.text = "+";
-            var removeButton = new Button();
-            removeButton.text = "-";
-            addButton.RegisterCallback<ClickEvent>(evt =>
             {
-                list.InsertArrayElementAtIndex(list.arraySize);
-                list.serializedObject.ApplyModifiedProperties();
-                UpdateListUI(listContainer, list);
-            });
-            removeButton.RegisterCallback<ClickEvent>(evt =>
-            {
-                if (list.arraySize > 0)
+                var listContainer = new VisualElement();
+                listContainer.style.flexDirection = FlexDirection.Column;
+                container.Add(listContainer);
                 {
-                    list.DeleteArrayElementAtIndex(list.arraySize - 1);
-                    list.serializedObject.ApplyModifiedProperties();
-                    UpdateListUI(listContainer, list);
+                    DrawAll(listContainer, targetList);
                 }
-            });
-            buttonGroup.Add(addButton);
-            buttonGroup.Add(removeButton);
-            container.Add(buttonGroup);
+
+                var buttonGroup = new VisualElement();
+                buttonGroup.style.flexDirection = FlexDirection.Row;
+                container.Add(buttonGroup);
+                {
+                    var addButton = new Button();
+                    addButton.text = "+";
+                    addButton.RegisterCallback<ClickEvent>(_ => AddPort(listContainer, targetList));
+                    buttonGroup.Add(addButton);
+
+                    var removeButton = new Button();
+                    removeButton.text = "-";
+                    removeButton.RegisterCallback<ClickEvent>(_ => RemovePort(listContainer, targetList));
+                    buttonGroup.Add(removeButton);
+                }
+            }
             return container;
-        }   
-        private void UpdateListUI(VisualElement container, SerializedProperty list)
+        }
+        static void DrawAll(VisualElement container, SerializedProperty list)
         {
-            container.Clear(); // 清除现有元素
-            foreach(SerializedProperty listItem in list)
+            container.Clear();
+            foreach (SerializedProperty listItem in list)
+                container.Add(new PropertyField(listItem));
+        }
+        static void AddPort(VisualElement container, SerializedProperty list)
+        {
+            list.InsertArrayElementAtIndex(list.arraySize);
+            list.serializedObject.ApplyModifiedProperties();
+            container.Add(new PropertyField(list.GetArrayElementAtIndex(list.arraySize - 1)));
+        }
+        static void RemovePort(VisualElement container, SerializedProperty list)
+        {
+            if (list.arraySize > 0)
             {
-                PropertyField propertyField = new PropertyField(listItem);
-                // propertyField.BindProperty(listItem);
-                container.Add(propertyField);
+                list.DeleteArrayElementAtIndex(list.arraySize - 1);
+                list.serializedObject.ApplyModifiedProperties();
+                container.RemoveAt(container.childCount - 1);
             }
         }
     }
-}   
+}

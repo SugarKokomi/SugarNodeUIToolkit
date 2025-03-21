@@ -6,19 +6,20 @@ using System.Linq;
 
 namespace SugarNode
 {
-
     [HideInInspector, Serializable]
-    public abstract class Port : ICanBulidConnectionCache
+    public abstract class Port : ISerializationCallbackReceiver
     //Port无法自己建立缓存，其连接网络需要Graph拿到全部Node才能帮忙构建。但是它可以自己清除自己的缓存
     {
-        public enum PortDirection { Input, Output }
-        protected Port() { }
+        public enum PortDirection
+        {
+            Input, Output
+        }
         protected abstract PortDirection Direction { get; }
 
         [SerializeField, HideInInspector]
         internal string m_guid;
         /// <summary> 用于Port的唯一标识 </summary>
-        public string guid => m_guid;
+        public string Guid => m_guid;
 
         [SerializeField, HideInInspector]
         internal string portName;
@@ -29,22 +30,13 @@ namespace SugarNode
         [SerializeField, HideInInspector]
         internal int m_maxConnectionCount = -1;
         /// <summary> 端口的最大连接数量。 </summary>
-        public int maxConnectionCount => m_maxConnectionCount;
+        public int MaxConnectionCount => m_maxConnectionCount;
 
 
         /// <summary> 端口所归属的节点 </summary>
-        [SerializeField, HideInInspector]
-        internal Node m_node;
-        public Node Node => m_node;
-
-        protected bool hadInitSelf = false;
-        public void TryAssignGUID()
-        {
-            if (string.IsNullOrEmpty(m_guid))
-            {
-                // m_guid = UnityEditor.GUID.Generate().ToString();
-            }
-        }
+        [NonSerialized, HideInInspector]
+        private Node m_node;
+        public Node Node { get => m_node; internal set => m_node = value; }
 
         public virtual bool CanConnectTo(Port other)
         {
@@ -52,15 +44,14 @@ namespace SugarNode
         }
         public virtual object GetValue() => null;
 
-        public void InitCache()
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-
+            if (string.IsNullOrEmpty(m_guid))
+                m_guid = UnityEditor.GUID.Generate().ToString();
         }
 
-        public void DisposeCache()
-        {
-
-        }
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        { }
     }
     [HideInInspector, Serializable]
     public class InputPort : Port//, ICanBulidConnectionCache
@@ -110,11 +101,6 @@ namespace SugarNode
         internal HashSet<InputPort> m_connections = new HashSet<InputPort>();
         public IEnumerable<InputPort> Connections => m_connections;
         public InputPort Connection => m_connections.FirstOrDefault();
-        /// <summary> 用于数据存取 序列化 </summary>
-        [SerializeField, HideInInspector]
-        internal List<string> m_connectionsGUID = new List<string>();
-
-        public IEnumerable<string> connectionsGUID => m_connectionsGUID;
 
         /* void ICanBulidConnectionCache.InitCache()
         {
@@ -198,7 +184,6 @@ namespace SugarNode
         public T this[int index] { get => _serializedList[index]; internal set => _serializedList[index] = value; }
         public void Add(T port)
         {
-            port.TryAssignGUID();
             _serializedList.Add(port);
         }
         public void Remove(T port)

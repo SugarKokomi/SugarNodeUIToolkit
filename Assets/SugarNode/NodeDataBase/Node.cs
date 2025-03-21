@@ -12,8 +12,6 @@ namespace SugarNode
         internal Graph m_graph;
         public Graph Graph => m_graph;
 
-        [HideInInspector]
-        public string guid;
         [NonSerialized]
         internal bool hadInitSelf = false;
 
@@ -44,12 +42,10 @@ namespace SugarNode
             m_inputs = null;
             m_outputs = null;
         }
-        protected void InitPort(Port port)
+        protected internal void InitPort(Port port)
         {
-            if(port == null)
-                throw new NullReferenceException("You can't add and init null port.");
-            port.TryAssignGUID();
-            port.m_node = this;
+            if(port == null) return;
+            port.Node = this;
             if (port is InputPort inputPort)
                 m_inputs.Add(inputPort);
             else if (port is OutputPort outputPort)

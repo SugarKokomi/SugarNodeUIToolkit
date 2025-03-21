@@ -71,6 +71,7 @@ namespace SugarNode.Editor
             {
                 graph.TryBuildAllRuntimeCache();
                 titleContent.text = graph.name;
+                EditorUtility.SetDirty(graph);
             }
             else titleContent.text = nameof(SugarNode);
             activeGraph = graph;

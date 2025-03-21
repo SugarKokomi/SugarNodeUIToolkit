@@ -16,6 +16,8 @@ namespace SugarNode
         private Dictionary<string, InputPort> m_allInputPortCache;
         [NonSerialized]
         private Dictionary<string, OutputPort> m_allOutputPortCache;
+        // [SerializeField, HideInInspector]
+        public ConnectionNets connectionTable = new ConnectionNets();
         /// <summary> 根据guid获取一个输入端口 </summary>
         public InputPort GetInputPort(string guid)
         {
@@ -31,7 +33,7 @@ namespace SugarNode
         /// <summary> 构建一个OutputPort与其下所有的InputPort的互相连接关系 </summary>
         private void BuildRuntimeConnection(OutputPort outputPort)
         {
-            foreach (var inputPortGUID in outputPort.m_connectionsGUID)
+            /* foreach (var inputPortGUID in outputPort.m_connectionsGUID)
             {
                 var inputPort = GetInputPort(inputPortGUID);
                 if (inputPort == null)
@@ -42,7 +44,7 @@ namespace SugarNode
                 //建立运行时双方的连接
                 inputPort.m_connections.Add(outputPort);
                 outputPort.m_connections.Add(inputPort);
-            }
+            } */
         }
         /// <summary> 清除全部的连接缓存 </summary>
         public void TryBuildAllRuntimeCache()
@@ -99,9 +101,9 @@ namespace SugarNode
             foreach (var node in nodes)
             {
                 foreach (var input in node.Inputs)
-                    m_allInputPortCache.AddOrSetValue(input.guid, input);
+                    m_allInputPortCache.AddOrSetValue(input.Guid, input);
                 foreach (var output in node.Outputs)
-                    m_allOutputPortCache.AddOrSetValue(output.guid, output);
+                    m_allOutputPortCache.AddOrSetValue(output.Guid, output);
             }
         }
         void ICanClearConnectionCache.DisposeCache()
@@ -120,34 +122,11 @@ namespace SugarNode
     {
         public void ConnectPort(string outputPortGUID, string inputPortGUID)
         {
-            var output = GetOutputPort(outputPortGUID);
-            var input = GetInputPort(inputPortGUID);
-            if (input == null || output == null) return;
-            ConnectPort(output, input);
-        }
-        public void ConnectPort(OutputPort outputPort, InputPort inputPort)
-        {
-            if (!outputPort.m_connectionsGUID.Contains(inputPort.guid))
-                outputPort.m_connectionsGUID.Add(inputPort.guid);
-            outputPort.m_connections.Add(inputPort);
-            inputPort.m_connections.Add(outputPort);
-            EditorUtility.SetDirty(this);
-            // AssetDatabase.SaveAssets();//可用于AutoSave
+            connectionTable.AddConnectGUID(inputPortGUID, outputPortGUID);
         }
         public void DisConnectPort(string outputPortGUID, string inputPortGUID)
         {
-            var output = GetOutputPort(outputPortGUID);
-            var input = GetInputPort(inputPortGUID);
-            if (input == null || output == null) return;
-            DisConnectPort(output, input);
-        }
-        public void DisConnectPort(OutputPort outputPort, InputPort inputPort)
-        {
-            outputPort.m_connectionsGUID.Remove(inputPort.guid);
-            outputPort.m_connections.Remove(inputPort);
-            inputPort.m_connections.Remove(outputPort);
-            EditorUtility.SetDirty(this);
-            // AssetDatabase.SaveAssets();
+            connectionTable.RemoveConnectGUID(inputPortGUID, outputPortGUID);
         }
         /// <summary> 每次创建节点时，需要单独构建自己的连接缓存 </summary>
         private void BulidEditorRuntimeConnections(Node node)
@@ -157,9 +136,9 @@ namespace SugarNode
             nodeInitializer.InitCache();
             //初始化Graph与Port的连接
             foreach (var input in node.Inputs)
-                m_allInputPortCache.AddOrSetValue(input.guid, input);
+                m_allInputPortCache.AddOrSetValue(input.Guid, input);
             foreach (var output in node.Outputs)
-                m_allOutputPortCache.AddOrSetValue(output.guid, output);
+                m_allOutputPortCache.AddOrSetValue(output.Guid, output);
             // BuildRuntimeConnection(output);//新创建的节点，其所有连接一定是空的，就不用创建Port之间的互相连接了
         }
         private void RemoveEditorRuntimeConnections(Node node)
@@ -168,12 +147,12 @@ namespace SugarNode
             foreach (var input in node.Inputs)
             {
                 (input as ICanBulidConnectionCache).DisposeCache();
-                m_allInputPortCache.Remove(input.guid);
+                m_allInputPortCache.Remove(input.Guid);
             }
             foreach (var output in node.Outputs)
             {
                 (output as ICanBulidConnectionCache).DisposeCache();
-                m_allOutputPortCache.Remove(output.guid);
+                m_allOutputPortCache.Remove(output.Guid);
             }
             //清除Node与Port的连接
             ICanBulidConnectionCache nodeInitializer = node;
@@ -190,17 +169,9 @@ namespace SugarNode
         }
         public bool DeleteNode(Node node)
         {
-            if (nodes.Remove(node))
+            /* if (nodes.Remove(node))
             {
                 //删除自身所有端口的连接
-                /*
-                //这样遍历会对原始的遍历集合node.Outputs进行删除，会报错
-                foreach (var output in node.Outputs)
-                    foreach (var input in output.Connections)
-                        DisConnectPort(output, input);
-                foreach (var input in node.Inputs)
-                    foreach (var output in input.Connections)
-                        DisConnectPort(output, input); */
 
                 //只需单向删除其他Node对自己的所有引用。自己对其他Node的引用会被删除节点的行为清除掉
                 foreach (var output in node.Outputs)
@@ -210,14 +181,14 @@ namespace SugarNode
                     foreach (var output in input.Connections)
                     {
                         output.m_connections.Remove(input);
-                        output.m_connectionsGUID.Remove(input.guid);
+                        output.m_connectionsGUID.Remove(input.Guid);
                     }
                 RemoveEditorRuntimeConnections(node);
 
                 AssetDatabase.RemoveObjectFromAsset(node);
                 AssetDatabase.SaveAssets();
                 return true;
-            }
+            } */
             return false;
         }
     }

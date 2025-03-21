@@ -29,11 +29,14 @@ namespace SugarNode.Editor
             {
                 foreach (var edge in graphViewChange.edgesToCreate)
                 {
-                    var inputNodeUI = edge.input.node as NodeElement;
+                    /* var inputNodeUI = edge.input.node as NodeElement;
                     var outputNodeUI = edge.output.node as NodeElement;
                     NodeEditorWindow.activeGraph.ConnectPort(
                         outputNodeUI.uiPairsPort[edge.output],
-                        inputNodeUI.uiPairsPort[edge.input]);
+                        inputNodeUI.uiPairsPort[edge.input]); */
+                    var input = edge.input as NodePortElement;
+                    var output = edge.output as NodePortElement;
+                    NodeEditorWindow.activeGraph.ConnectPort(output.guid, input.guid);
                 }
             }
             else if (graphViewChange.elementsToRemove != null)
@@ -42,11 +45,9 @@ namespace SugarNode.Editor
                 {
                     if (element is Edge edge)
                     {
-                        var inputNodeUI = edge.input.node as NodeElement;
-                        var outputNodeUI = edge.output.node as NodeElement;
-                        NodeEditorWindow.activeGraph.DisConnectPort(
-                            outputNodeUI.uiPairsPort[edge.output],
-                            inputNodeUI.uiPairsPort[edge.input]);
+                        var input = edge.input as NodePortElement;
+                        var output = edge.output as NodePortElement;
+                        NodeEditorWindow.activeGraph.DisConnectPort(output.guid, input.guid);
                     }
                 }
             }
@@ -100,7 +101,6 @@ namespace SugarNode.Editor
                 Node node = ScriptableObject.CreateInstance(type) as Node;
                 node.name = NodeAttributeHandler.Instance.GetNodeDefaultName(type);
                 node.gridPos = mousePositionInGridSpace;
-                node.guid = GUID.Generate().ToString();
                 NodeEditorWindow.activeGraph.AddNode(node);
                 // 创建节点UI，并且添加到节点图中
                 AddElement(new NodeElement(node));
@@ -152,7 +152,7 @@ namespace SugarNode.Editor
                     nodeElements.Add(nodeElement);//添加到缓存
                 }
                 //等节点全部绘制完后，再绘制线条
-                foreach (var nodeElement in nodeElements)//遍历每个节点
+                /* foreach (var nodeElement in nodeElements)//遍历每个节点
                 {
                     IEnumerable<PortElement> outputPorts = nodeElement.uiPairsPort.Keys.Where(port => port.direction == Direction.Output);//获取UI上所有的输出端口
                     foreach (var outputPort in outputPorts)//遍历节点UI的Output Port，绘制每一条连接
@@ -163,6 +163,14 @@ namespace SugarNode.Editor
                             Edge edge = outputPort.ConnectTo(NodeElement.uiPairsPortReverse[guid]);
                             AddElement(edge);
                         }
+                    }
+                } */
+                foreach (var connectionInfo in NodeEditorWindow.activeGraph.connectionTable)
+                {
+                    foreach (var inputPort in connectionInfo.Value)
+                    {
+                        Edge edge = NodeElement.uiPairsPortReverse[connectionInfo.Key].ConnectTo(NodeElement.uiPairsPortReverse[inputPort]);
+                        AddElement(edge);
                     }
                 }
             }
