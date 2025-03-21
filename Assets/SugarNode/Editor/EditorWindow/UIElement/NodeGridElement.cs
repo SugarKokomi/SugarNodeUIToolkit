@@ -144,27 +144,11 @@ namespace SugarNode.Editor
             DeleteElements(graphElements);
             if (NodeEditorWindow.activeGraph)
             {
-                List<NodeElement> nodeElements = new List<NodeElement>();
                 foreach (var node in NodeEditorWindow.activeGraph.Nodes)
                 {
                     var nodeElement = new NodeElement(node);
                     AddElement(nodeElement);//绘制所有的Node
-                    nodeElements.Add(nodeElement);//添加到缓存
                 }
-                //等节点全部绘制完后，再绘制线条
-                /* foreach (var nodeElement in nodeElements)//遍历每个节点
-                {
-                    IEnumerable<PortElement> outputPorts = nodeElement.uiPairsPort.Keys.Where(port => port.direction == Direction.Output);//获取UI上所有的输出端口
-                    foreach (var outputPort in outputPorts)//遍历节点UI的Output Port，绘制每一条连接
-                    {
-                        IEnumerable<string> guids = NodeEditorWindow.activeGraph.GetOutputPort(nodeElement.uiPairsPort[outputPort]).connectionsGUID;//获取连接的每个输入端口的guid
-                        foreach (var guid in guids)//遍历每个与自己（输出端口）所连接的输入端口,用一条线连接上
-                        {
-                            Edge edge = outputPort.ConnectTo(NodeElement.uiPairsPortReverse[guid]);
-                            AddElement(edge);
-                        }
-                    }
-                } */
                 foreach (var connectionInfo in NodeEditorWindow.activeGraph.connectionTable)
                 {
                     foreach (var inputPort in connectionInfo.Value)

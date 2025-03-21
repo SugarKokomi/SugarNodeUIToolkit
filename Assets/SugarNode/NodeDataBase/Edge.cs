@@ -33,7 +33,7 @@ namespace SugarNode
         }
     }
     [Serializable, HideInInspector]
-    public sealed class ConnectionNets : SerializableDictionary<string, HashSet<string>>, ISerializationCallbackReceiver
+    public sealed class ConnectionNets : Dictionary<string, HashSet<string>>, ISerializationCallbackReceiver
     {
         public void AddConnectGUID(string input, string output)
         {
@@ -49,6 +49,29 @@ namespace SugarNode
                 if (inputs.Count == 0)
                     Remove(output);
             }
+        }
+        [SerializeField, HideInInspector]
+        private List<Kvp> serializableList;
+        public void OnAfterDeserialize()
+        {
+            foreach (var listItem in serializableList)
+                TryAdd(listItem.key, listItem.value.ToHashSet());
+            serializableList.Clear();
+            serializableList = null;
+        }
+        public void OnBeforeSerialize()
+        {
+            serializableList = this.Select(kvp => new Kvp
+            {
+                key = kvp.Key,
+                value = kvp.Value.ToList()
+            }).ToList();
+        }
+        [HideInInspector, Serializable]
+        private class Kvp
+        {
+            public string key;
+            public List<string> value;
         }
     }
 }
